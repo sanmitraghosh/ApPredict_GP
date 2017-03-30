@@ -98,8 +98,6 @@ def main():
 
     if ask_for_response("Does this project depend on the lung component? [Y/n] "):
         components_list.append('lung')
-    if ask_for_response("Does this project depend on the APPredict project? [Y/n] "):
-        components_list.append('projects/ApPredict')
 
     # If the list is non-empty, replace the default components
     if components_list:
