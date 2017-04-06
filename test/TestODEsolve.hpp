@@ -3,6 +3,8 @@
 
 #include <cxxtest/TestSuite.h>
 #include <boost/shared_ptr.hpp>
+#include <ColumnDataReader.hpp>
+#include <ColumnDataWriter.hpp>
 #include "CellProperties.hpp"
 #include "SteadyStateRunner.hpp"
 #include "AbstractCvodeCell.hpp"
@@ -30,9 +32,9 @@ public:
         boost::shared_ptr<AbstractCvodeCell> p_model(new Cellohara_rudy_2011_endoFromCellMLCvode(p_solver, p_stimulus));
         boost::shared_ptr<RegularStimulus> p_regular_stim = p_model->UseCellMLDefaultStimulus();
 
-        unsigned TESTFLAG=3;
-        std::cout<< "STim start value is:--->"<<p_regular_stim->GetStartTime()<<std::endl;
-        std::cout<< "STim magnitude value is:--->"<<p_regular_stim->GetMagnitude()<<std::endl;
+        unsigned TESTFLAG=1;
+        std::cout<< "Stim start value is:--->"<<p_regular_stim->GetStartTime()<<std::endl;
+        std::cout<< "Stim magnitude value is:--->"<<p_regular_stim->GetMagnitude()<<std::endl;
         p_regular_stim->SetPeriod(1000);
 
         /*
@@ -52,11 +54,14 @@ public:
         p_model->SetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance", 0.99*param[0]);
         p_model->SetParameter("membrane_fast_sodium_current_conductance", 0.69*param[1]);
         */
-
-
+        ColumnDataReader reader("projects/ApPredict_GP/test/data", "testunlimited",false);
+        std::vector<double> t = reader.GetValues("I_K");
+        for(unsigned i = 0; i != t.size(); i++) {
+           std::cout << t[i]<<std::endl<< std::flush;
+        }
         /* Run to Limit Cycle */
         SteadyStateRunner steady_runner(p_model);
-        steady_runner.SetMaxNumPaces(10u);
+        steady_runner.SetMaxNumPaces(1000u);
         bool result;
         result = steady_runner.RunToSteadyState();
 
@@ -65,10 +70,10 @@ public:
         // Start Testing
         std::vector<double> param;
         std::vector<double> blocks;
-        blocks.push_back(0.782990163368869);
-        blocks.push_back(0.423593671196900);
-        blocks.push_back(0.836121115158979);
-        blocks.push_back(0.593091716207322);
+        blocks.push_back(0.423856038338789);
+        blocks.push_back(0.372773715420817);
+        blocks.push_back(0.363458648434132);
+        blocks.push_back(0.146786021393302);
         param.push_back(p_model->GetParameter("membrane_fast_sodium_current_conductance"));
         param.push_back(p_model->GetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance"));
         param.push_back(p_model->GetParameter("membrane_slow_delayed_rectifier_potassium_current_conductance"));
@@ -104,8 +109,8 @@ public:
         p_model->SetTolerances(1e-6,1e-8);
         double max_timestep = 0.5;
         p_model->SetMaxTimestep(max_timestep);
-        p_regular_stim->SetStartTime(0);
-        double sampling_timestep = 1;//max_timestep;
+        p_regular_stim->SetStartTime(10);
+        double sampling_timestep = 0.1;//max_timestep;
         double start_time = 0.0;
         double end_time = 1000.0;
         OdeSolution solution = p_model->Compute(start_time, end_time, sampling_timestep);
