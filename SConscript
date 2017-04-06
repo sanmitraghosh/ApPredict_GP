@@ -44,10 +44,7 @@ project_name = os.path.basename(os.path.dirname(os.path.dirname(os.getcwd())))
 
 # Chaste libraries used by this project.
 # Select which line to uncomment based on what your project needs, or alter as required.
-chaste_libs_used = ['core']
-#chaste_libs_used = ['cell_based']
-#chaste_libs_used = ['heart']
-#chaste_libs_used = ['cell_based', 'heart']
+chaste_libs_used = ['heart', 'projects/ApPredict']
 
 # Do the build magic
 result = SConsTools.DoProjectSConscript(project_name, chaste_libs_used, globals())
