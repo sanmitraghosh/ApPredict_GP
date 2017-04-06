@@ -5,7 +5,7 @@
 # find_package() call for Chaste.  E.g.
 #   find_package(Chaste COMPONENTS cell_based)
 # for a project just using the cell_based component (and its dependencies), or
-  find_package(Chaste COMPONENTS cell_based crypt heart lung)
+  find_package(Chaste COMPONENTS heart)
 # for a project combining heart & lung simulations.
 #
 # Note that the order in which components are specified does not matter.
