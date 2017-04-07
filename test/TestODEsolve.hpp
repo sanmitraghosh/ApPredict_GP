@@ -3,6 +3,7 @@
 
 #include <cxxtest/TestSuite.h>
 #include <boost/shared_ptr.hpp>
+#include <boost/assign/list_of.hpp>
 #include <ColumnDataReader.hpp>
 #include <ColumnDataWriter.hpp>
 #include "CellProperties.hpp"
@@ -21,6 +22,8 @@
 #include "FakePetscSetup.hpp"
 #include <iostream>
 #include <fstream>
+#include <numeric>
+#include <cmath>
 class TestSingleCellTutorial : public CxxTest::TestSuite
 {
 public:
@@ -37,28 +40,21 @@ public:
         std::cout<< "Stim magnitude value is:--->"<<p_regular_stim->GetMagnitude()<<std::endl;
         p_regular_stim->SetPeriod(1000);
 
-        /*
-        std::cout << p_cvode_cell->GetSystemName() << std::endl << std::flush;
-        std::cout << "Param is ::"<<p_model->GetNumberOfParameters()<<std::endl<< std::flush;
-        const std::vector<std::string>par= p_model->rGetParameterNames();
-        for(unsigned i = 0; i != par.size(); i++) {
-           std::cout << par[i]<<std::endl<< std::flush;
-        }
-        std::vector<double> param;
-        param.push_back(p_model->GetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance"));
-        param.push_back(p_model->GetParameter("membrane_fast_sodium_current_conductance"));
-        for(unsigned i = 0; i != param.size(); i++) {
-           std::cout << param[2]<<std::endl<< std::flush;
-        }
 
-        p_model->SetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance", 0.99*param[0]);
-        p_model->SetParameter("membrane_fast_sodium_current_conductance", 0.69*param[1]);
-        */
         ColumnDataReader reader("projects/ApPredict_GP/test/data", "testunlimited",false);
-        std::vector<double> t = reader.GetValues("I_K");
+        std::vector<double> t = reader.GetValues("g_Na");
         for(unsigned i = 0; i != t.size(); i++) {
-           std::cout << t[i]<<std::endl<< std::flush;
+
+           t[i]=(0-t[i]);
         }
+        for(unsigned i = 0; i != t.size(); i++) {
+                   std::cout << t[i]<<std::endl<< std::flush;
+
+                }
+        double sum_of_elems = std::accumulate(t.begin(), t.end(), 0.0f);
+        //std::vector<c_vector<double, 4u> > parameter_values;
+        std::cout << "the size is:"<<sum_of_elems<<std::endl<< std::flush;
+
         /* Run to Limit Cycle */
         SteadyStateRunner steady_runner(p_model);
         steady_runner.SetMaxNumPaces(1000u);

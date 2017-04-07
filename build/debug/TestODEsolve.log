@@ -1,0 +1,22 @@
+Running 1 test
+
+ ***** TestSingleCellTutorial.hpp *****
+
+
+Entering TestOHaraSimulation
+Stim start value is:--->10
+Stim magnitude value is:--->-80
+-0.423856
+-0.78299
+-0.399947
+-0.405653
+the size is:-2.01245
+Steady state not reached after 1000 paces.
+
+./projects/ApPredict_GP/test/TestODEsolve.hpp:121: Error: Expected (apd == 399), found (426.2535 != 399)
+APD value is:--->426.254
+Failed
+
+Failed 1 of 1 test
+Success rate: 0%
+Chaste warning: in file heart/src/odes/single_cell/AbstractSteadyStateRunner.cpp at line 65: Model ohara_rudy_2011 did not reach steady state within 1000 paces.
