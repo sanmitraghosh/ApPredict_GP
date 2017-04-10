@@ -44,9 +44,8 @@ public:
         std::vector<double> Block_gKs = reader.GetValues("g_Ks");
         std::vector<double> Block_gCal = reader.GetValues("g_CaL");
         std::vector<double> MATLABapd = reader.GetValues("MatAPD");
-
-
-        for (unsigned i=0;i<=Block_gNa.size();i++)
+        
+        for (unsigned i=0;i<Block_gNa.size();i++)
         {
             Block_gNa[i]=Block_gNa[i]*p_model->GetParameter("membrane_fast_sodium_current_conductance");
             Block_gKr[i]=Block_gKr[i]*p_model->GetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance");
@@ -55,7 +54,7 @@ public:
         }
 
         std::vector<c_vector<double, 4u> > parameter_values; // 4-D vector of parameter values
-        for(unsigned i=0;i<=Block_gNa.size();i++)
+        for(unsigned i=0;i<Block_gNa.size();i++)
         {
         	c_vector<double,4u> blocks;
             blocks[0]=Block_gNa[i];
@@ -86,10 +85,11 @@ public:
 
         // Interpolate ********* Gary pls Check********************
         std::vector<std::vector<double> > apd_values = generator.Interpolate(parameter_values);
+        TS_ASSERT_EQUALS(apd_values.size(),parameter_values.size());
         std::vector<double> L1dist;
 
         //Implement L1 error with matlab
-        for(unsigned i=0;i<=apd_values.size();i++)
+        for(unsigned i=0;i<apd_values.size();i++)
         {
             L1dist.push_back(std::abs(MATLABapd[i]-apd_values[i][0]));
         }
