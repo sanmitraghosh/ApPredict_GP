@@ -51,38 +51,47 @@ public:
             Block_gNa[i]=Block_gNa[i]*p_model->GetParameter("membrane_fast_sodium_current_conductance");
             Block_gKr[i]=Block_gKr[i]*p_model->GetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance");
             Block_gKs[i]=Block_gKs[i]*p_model->GetParameter("membrane_slow_delayed_rectifier_potassium_current_conductance");
-            Block_gNa[i]=Block_gNa[i]*p_model->GetParameter("membrane_L_type_calcium_current_conductance");
+            Block_gNa[i]=Block_gCal[i]*p_model->GetParameter("membrane_L_type_calcium_current_conductance");
         }
 
-        //******* Gary pls Check********************
         std::vector<c_vector<double, 4u> > parameter_values; // 4-D vector of parameter values
-
-        for(unsigned i=0;i<=parameter_values.size();i++)
+        for(unsigned i=0;i<=Block_gNa.size();i++)
         {
-            parameter_values[i][0]=Block_gNa[i];
-            parameter_values[i][1]=Block_gKr[i];
-            parameter_values[i][2]=Block_gKs[i];
-            parameter_values[i][3]=Block_gNa[i];
-
+        	c_vector<double,4u> blocks;
+            blocks[0]=Block_gNa[i];
+            blocks[1]=Block_gKr[i];
+            blocks[2]=Block_gKs[i];
+            blocks[3]=Block_gCal[i];
+            parameter_values.push_back(blocks);
         }
+        
         // Get the generator ready
-        unsigned model_index = 9u;// O'Hara Rudy (table generated for 1 Hz at present)etModel();
+        unsigned model_index = 6u;// O'Hara Rudy (table generated for 1 Hz at present)
 
         std::string file_name = "4d_test";
-        LookupTableGenerator<4> generator(model_index, file_name, "TestLookupTables");
+        LookupTableGenerator<4> generator(model_index, file_name, "TestApPredict_GPInterpolate");
+        
+        // N.B. These have to be in same order as the 'block' vector above for the lookup to make any sense.
+        generator.SetParameterToScale("membrane_fast_sodium_current_conductance", 0.0 , 1.0);
+        generator.SetParameterToScale("membrane_rapid_delayed_rectifier_potassium_current_conductance", 0.0 , 1.0);
+        generator.SetParameterToScale("membrane_slow_delayed_rectifier_potassium_current_conductance", 0.0 , 1.0);
+        generator.SetParameterToScale("membrane_L_type_calcium_current_conductance", 0.0 , 1.0);
+                
         generator.SetMaxNumPaces(1000u);
-        generator.SetPacingFrequency(1000);// I hope this gives the regularstim SetPeriod type
-        generator.SetMaxNumEvaluations(5u);// restrict to 5 ODE evaluations & ask to predict on all 10 points
+        generator.SetPacingFrequency(1.0); // 1Hz
+        generator.SetMaxNumEvaluations(5u); // restrict to 5 ODE evaluations (N.B. it will evaluate more as it does all the corners first.)
         generator.AddQuantityOfInterest(Apd90, 0.5 /*ms*/);
+        
+        generator.GenerateLookupTable();
 
         // Interpolate ********* Gary pls Check********************
-        std::vector<std::vector<double> > apdValues=generator.Interpolate(parameter_values);
+        std::vector<std::vector<double> > apd_values = generator.Interpolate(parameter_values);
         std::vector<double> L1dist;
 
         //Implement L1 error with matlab
-        for(unsigned i=0;i<=apdValues.size();i++)
+        for(unsigned i=0;i<=apd_values.size();i++)
         {
-            L1dist[i]=std::abs(MATLABapd[i]-apdValues[0][i]);
+            L1dist[i]=std::abs(MATLABapd[i]-apd_values[i][0]);
         }
         double L1error = (std::accumulate(L1dist.begin(), L1dist.end(), 0.0f) )/L1dist.size();
         std::cout << "The error Interpolate Vs GP is:"<<L1error<<std::endl<< std::flush;
