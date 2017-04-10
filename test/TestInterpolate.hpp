@@ -45,13 +45,15 @@ public:
         std::vector<double> Block_gCal = reader.GetValues("g_CaL");
         std::vector<double> MATLABapd = reader.GetValues("MatAPD");
         
+        /** Lookup tables work with scalings not raw numbers.
         for (unsigned i=0;i<Block_gNa.size();i++)
         {
             Block_gNa[i]=Block_gNa[i]*p_model->GetParameter("membrane_fast_sodium_current_conductance");
             Block_gKr[i]=Block_gKr[i]*p_model->GetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance");
             Block_gKs[i]=Block_gKs[i]*p_model->GetParameter("membrane_slow_delayed_rectifier_potassium_current_conductance");
-            Block_gNa[i]=Block_gCal[i]*p_model->GetParameter("membrane_L_type_calcium_current_conductance");
+            Block_gCal[i]=Block_gCal[i]*p_model->GetParameter("membrane_L_type_calcium_current_conductance");
         }
+        **/
 
         std::vector<c_vector<double, 4u> > parameter_values; // 4-D vector of parameter values
         for(unsigned i=0;i<Block_gNa.size();i++)
