@@ -91,7 +91,7 @@ public:
         //Implement L1 error with matlab
         for(unsigned i=0;i<=apd_values.size();i++)
         {
-            L1dist[i]=std::abs(MATLABapd[i]-apd_values[i][0]);
+            L1dist.push_back(std::abs(MATLABapd[i]-apd_values[i][0]));
         }
         double L1error = (std::accumulate(L1dist.begin(), L1dist.end(), 0.0f) )/L1dist.size();
         std::cout << "The error Interpolate Vs GP is:"<<L1error<<std::endl<< std::flush;
