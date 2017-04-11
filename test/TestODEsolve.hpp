@@ -24,6 +24,7 @@
 #include <fstream>
 #include <numeric>
 #include <cmath>
+#include <boost/lexical_cast.hpp>
 class TestSingleCellTutorial : public CxxTest::TestSuite
 {
 public:
@@ -118,8 +119,19 @@ public:
         CellProperties cell_props(voltages, solution.rGetTimes());
 
         double apd = cell_props.GetLastActionPotentialDuration(90);
-        TS_ASSERT_EQUALS(apd, 399);
+        TS_ASSERT_EQUALS(apd, 426);
         std::cout<< "APD value is:--->"<<apd<<std::endl;
+
+        /* Some random tests         */
+
+        for(unsigned i=0;i<2;i++)
+        {
+
+            std::string file_name = boost::lexical_cast<std::string>(i);
+            std::string newName= file_name + "blabla";
+            std::cout<<newName <<std::endl;
+
+        }
 #else
         std::cout << "Cvode is not enabled.\n";
 #endif

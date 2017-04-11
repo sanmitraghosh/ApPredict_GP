@@ -23,11 +23,11 @@ int main( int argc, char *argv[] ) {
 static TestSingleCellTutorial suite_TestSingleCellTutorial;
 
 static CxxTest::List Tests_TestSingleCellTutorial = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_TestSingleCellTutorial( "projects/ApPredict_GP/test/TestODEsolve.hpp", 27, "TestSingleCellTutorial", suite_TestSingleCellTutorial, Tests_TestSingleCellTutorial );
+CxxTest::StaticSuiteDescription suiteDescription_TestSingleCellTutorial( "projects/ApPredict_GP/test/TestODEsolve.hpp", 28, "TestSingleCellTutorial", suite_TestSingleCellTutorial, Tests_TestSingleCellTutorial );
 
 static class TestDescription_TestSingleCellTutorial_TestOHaraSimulation : public CxxTest::RealTestDescription {
 public:
- TestDescription_TestSingleCellTutorial_TestOHaraSimulation() : CxxTest::RealTestDescription( Tests_TestSingleCellTutorial, suiteDescription_TestSingleCellTutorial, 30, "TestOHaraSimulation" ) {}
+ TestDescription_TestSingleCellTutorial_TestOHaraSimulation() : CxxTest::RealTestDescription( Tests_TestSingleCellTutorial, suiteDescription_TestSingleCellTutorial, 31, "TestOHaraSimulation" ) {}
  void runTest() { suite_TestSingleCellTutorial.TestOHaraSimulation(); }
 } testDescription_TestSingleCellTutorial_TestOHaraSimulation;
 

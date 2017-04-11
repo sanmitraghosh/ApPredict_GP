@@ -1,5 +1,5 @@
-#ifndef TESTINTERPOLATEVSGP_HPP_
-#define TESTINTERPOLATEVSGP_HPP_
+#ifndef TESTINTERPOLATE_HPP_
+#define TESTINTERPOLATE_HPP_
 
 #include <cxxtest/TestSuite.h>
 #include <boost/shared_ptr.hpp>
@@ -26,10 +26,11 @@
 #include <fstream>
 #include <cmath>
 #include <numeric>
-class TestInterpolateVsGP : public CxxTest::TestSuite
+#include <boost/lexical_cast.hpp>
+class TestInterpolate : public CxxTest::TestSuite
 {
 public:
-    void TestInterpolate() throw(Exception)
+    void TestInterpolateVsGP() throw(Exception)
     {
         // Define the O'hara model
         boost::shared_ptr<RegularStimulus> p_stimulus;
@@ -80,7 +81,7 @@ public:
                 
         generator.SetMaxNumPaces(1000u);
         generator.SetPacingFrequency(1.0); // 1Hz
-        generator.SetMaxNumEvaluations(5u); // restrict to 5 ODE evaluations (N.B. it will evaluate more as it does all the corners first.)
+        generator.SetMaxNumEvaluations(100u); // restrict to 5 ODE evaluations (N.B. it will evaluate more as it does all the corners first.)
         generator.AddQuantityOfInterest(Apd90, 0.5 /*ms*/);
         
         generator.GenerateLookupTable();
@@ -99,6 +100,7 @@ public:
         std::cout << "The error Interpolate Vs GP is:"<<L1error<<std::endl<< std::flush;
 
     }
-};
-#endif /*TESTINTERPOLATEVSGP_HPP_*/
+
+ };
+#endif /*TESTINTERPOLATE_HPP_*/
 
