@@ -19,16 +19,15 @@ class TestLookupTableArchive : public CxxTest::TestSuite
 public:
     void TestArchive() throw(Exception)
     {
-
         OutputFileHandler handler("TestLookupTableArchiving_GP",false);
 
         unsigned model_index = 6u; // O'Hara Rudy (table generated for 1 Hz at present)
-        unsigned batchSize = 20u;
-        unsigned testSize = 2u; // Remember Evaluation data set size= testSize*batchSize
+        unsigned batchSize = 64u;
+        unsigned testSize = 5u; // Remember Evaluation data set size= testSize*batchSize
         unsigned num_evals_before_save = batchSize;
 
         LookupTableGenerator<4>* const p_generator =
-        						new LookupTableGenerator<4>(model_index, file_name, "TestLookupTableArchiving_GP");
+        						new LookupTableGenerator<4>(model_index, "all_box_points_so_far", "TestLookupTableArchiving_GP");
 
 		p_generator->SetParameterToScale("membrane_fast_sodium_current_conductance", 0.0 , 1.0);
 		p_generator->SetParameterToScale("membrane_rapid_delayed_rectifier_potassium_current_conductance", 0.0 , 1.0);
@@ -42,6 +41,7 @@ public:
 		{
 			// Create data structures to store variables to test for equality here
 			num_evals_before_save = batchSize*(i+1);
+			std::cout << "Running simulations up to " << num_evals_before_save << " evaluations." << std::endl;
 			p_generator->SetMaxNumEvaluations(num_evals_before_save);
 			p_generator->GenerateLookupTable();
 
