@@ -25,7 +25,7 @@ public:
         unsigned batchSize = 10u;
         unsigned testSize = 2u; // Remember Evaluation data set size= testSize*batchSize
         unsigned num_evals_before_save = batchSize;
-        std::vector<double> NumSimulations;
+        std::vector<unsigned> num_simulations;
         LookupTableGenerator<4>* const p_generator =
         						new LookupTableGenerator<4>(model_index, "all_box_points_so_far", "TestLookupTableArchiving_GP");
 
@@ -44,6 +44,7 @@ public:
 			std::cout << "Running simulations up to " << num_evals_before_save << " evaluations." << std::endl;
 			p_generator->SetMaxNumEvaluations(num_evals_before_save);
 			p_generator->GenerateLookupTable();
+			num_simulations.push_back(p_generator->GetNumEvaluations());
 
 			std::string archive_filename = handler.GetOutputDirectoryFullPath() + "Generator_"
 					+ boost::lexical_cast<std::string>(p_generator->GetNumEvaluations()) + "_Evals.arch";
@@ -51,17 +52,39 @@ public:
 			boost::archive::text_oarchive output_arch(ofs);
 
 			output_arch << p_generator;
-			NumSimulations.push_back(p_generator->GetNumEvaluations());
 		}
 
 		delete p_generator;
 
-        LookupTableGenerator<4>* p_generatorReader;
-        for(unsigned i=0;i<testSize;i++)
+		// Now archive the number of simulations that were performed.
+		std::string archive_filename_num_evals = handler.GetOutputDirectoryFullPath() + "NumbersOfEvaluations.arch";
+		std::ofstream ofs_2(archive_filename.c_str());
+		boost::archive::text_oarchive output_arch_2(ofs_2);
+		output_arch_2 << num_simulations;
+    }
+
+
+    // This should be a completely independent test (with no member variables carried across)
+    // to check that we can still load up these generators with a fresh simulation later on.
+    void TestLoadingGenerators() throw(Exception)
+    {
+    	OutputFileHandler handler("TestLookupTableArchiving_GP",false);
+
+    	// Load the number of simulations that were performed.
+    	std::string archive_filename_num_evals = handler.GetOutputDirectoryFullPath() + "NumbersOfEvaluations.arch";
+    	std::ifstream ifs_num_evals(archive_filename.c_str(), std::ios::binary);
+    	boost::archive::text_iarchive input_arch_num_evals(ifs_num_evals);
+
+    	std::vector<unsigned> num_evaluations;
+    	input_arch_num_evals >> num_evaluations;
+
+
+        for(unsigned i=0;i<num_evaluations.size();i++)
         {
+        	LookupTableGenerator<4>* p_generator_read_in;
 
             std::string archive_filename = handler.GetOutputDirectoryFullPath() + "Generator_"
-                 + boost::lexical_cast<std::string>(NumSimulations[i]) + "_Evals.arch";
+                 + boost::lexical_cast<std::string>(num_evaluations[i]) + "_Evals.arch";
 
             std::cout<<"Filepath is"<<archive_filename<<std::endl;
             // Create an input archive
@@ -69,18 +92,18 @@ public:
             boost::archive::text_iarchive input_arch(ifs);
 
             // restore from the archive
-            std::cout << "Loading from archive " << NumSimulations[i] << " evaluations." << std::endl;
-            input_arch >> p_generatorReader;
+            std::cout << "Loading from archive " << num_evaluations[i] << " evaluations." << std::endl;
+            input_arch >> p_generator_read_in;
 
-            std::vector<c_vector<double, 4u> > points = p_generatorReader->GetParameterPoints();
-            std::vector<std::vector<double> > values = p_generatorReader->GetFunctionValues();
+            std::vector<c_vector<double, 4u> > points = p_generator_read_in->GetParameterPoints();
+            std::vector<std::vector<double> > values = p_generator_read_in->GetFunctionValues();
 
-            TS_ASSERT_EQUALS(points.size(), NumSimulations[i]);
-            TS_ASSERT_EQUALS(values.size(), NumSimulations[i]);
+            TS_ASSERT_EQUALS(points.size(), num_evaluations[i]);
+            TS_ASSERT_EQUALS(values.size(), num_evaluations[i]);
 
-
+            delete p_generator_read_in;
         }
-        delete p_generatorReader;
+
     }
 
  };
