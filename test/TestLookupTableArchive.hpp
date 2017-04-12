@@ -58,7 +58,7 @@ public:
 
 		// Now archive the number of simulations that were performed.
 		std::string archive_filename_num_evals = handler.GetOutputDirectoryFullPath() + "NumbersOfEvaluations.arch";
-		std::ofstream ofs_2(archive_filename.c_str());
+		std::ofstream ofs_2(archive_filename_num_evals.c_str());
 		boost::archive::text_oarchive output_arch_2(ofs_2);
 		output_arch_2 << num_simulations;
     }
