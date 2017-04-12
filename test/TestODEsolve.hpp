@@ -42,7 +42,7 @@ public:
         p_regular_stim->SetPeriod(1000);
 
 
-        ColumnDataReader reader("projects/ApPredict_GP/test/data", "testunlimited",false);
+ /*       ColumnDataReader reader("projects/ApPredict_GP/test/data", "testunlimited",false);
         std::vector<double> t = reader.GetValues("g_Na");
         for(unsigned i = 0; i != t.size(); i++) {
 
@@ -55,22 +55,28 @@ public:
         double sum_of_elems = std::accumulate(t.begin(), t.end(), 0.0f);
         //std::vector<c_vector<double, 4u> > parameter_values;
         std::cout << "the size is:"<<sum_of_elems<<std::endl<< std::flush;
-
+*/
         /* Run to Limit Cycle */
         SteadyStateRunner steady_runner(p_model);
         steady_runner.SetMaxNumPaces(1000u);
         bool result;
-        result = steady_runner.RunToSteadyState();
+        //result = steady_runner.RunToSteadyState();
 
-        TS_ASSERT_EQUALS(result,false);
+
 
         // Start Testing
         std::vector<double> param;
         std::vector<double> blocks;
-        blocks.push_back(0.423856038338789);
-        blocks.push_back(0.372773715420817);
-        blocks.push_back(0.363458648434132);
-        blocks.push_back(0.146786021393302);
+        /*
+        blocks.push_back(0.445998256030947);
+        blocks.push_back(0.726700392981565);
+        blocks.push_back(0.164843392907217);
+        blocks.push_back(0.645151967944316);
+        */
+        blocks.push_back(0);
+        blocks.push_back(1);
+        blocks.push_back(1);
+        blocks.push_back(1);
         param.push_back(p_model->GetParameter("membrane_fast_sodium_current_conductance"));
         param.push_back(p_model->GetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance"));
         param.push_back(p_model->GetParameter("membrane_slow_delayed_rectifier_potassium_current_conductance"));
@@ -102,7 +108,8 @@ public:
         p_model->SetParameter("membrane_L_type_calcium_current_conductance", blocks[3]*param[3]);
 
         }
-
+        result = steady_runner.RunToSteadyState();
+        TS_ASSERT_EQUALS(result,false);
         p_model->SetTolerances(1e-6,1e-8);
         double max_timestep = 0.5;
         p_model->SetMaxTimestep(max_timestep);
@@ -116,22 +123,23 @@ public:
 
         unsigned voltage_index = p_model->GetSystemInformation()->GetStateVariableIndex("membrane_voltage");
         std::vector<double> voltages = solution.GetVariableAtIndex(voltage_index);
-        CellProperties cell_props(voltages, solution.rGetTimes());
+        CellProperties cell_props(voltages, solution.rGetTimes(),-50);
 
+        try{
         double apd = cell_props.GetLastActionPotentialDuration(90);
-        TS_ASSERT_EQUALS(apd, 426);
-        std::cout<< "APD value is:--->"<<apd<<std::endl;
+        TS_ASSERT_DELTA(apd, 329.431,0.0070);
+                std::cout<< "APD value is:--->"<<apd<<std::endl;
+        }
+        catch(Exception &e)
+        {
+            std::cout << e.GetMessage() << std::endl;
+        }
+
+
 
         /* Some random tests         */
 
-        for(unsigned i=0;i<2;i++)
-        {
 
-            std::string file_name = boost::lexical_cast<std::string>(i);
-            std::string newName= file_name + "blabla";
-            std::cout<<newName <<std::endl;
-
-        }
 #else
         std::cout << "Cvode is not enabled.\n";
 #endif

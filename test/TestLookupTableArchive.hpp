@@ -22,10 +22,10 @@ public:
         OutputFileHandler handler("TestLookupTableArchiving_GP",false);
 
         unsigned model_index = 6u; // O'Hara Rudy (table generated for 1 Hz at present)
-        unsigned batchSize = 64u;
-        unsigned testSize = 5u; // Remember Evaluation data set size= testSize*batchSize
+        unsigned batchSize = 10u;
+        unsigned testSize = 2u; // Remember Evaluation data set size= testSize*batchSize
         unsigned num_evals_before_save = batchSize;
-
+        std::vector<double> NumSimulations;
         LookupTableGenerator<4>* const p_generator =
         						new LookupTableGenerator<4>(model_index, "all_box_points_so_far", "TestLookupTableArchiving_GP");
 
@@ -51,9 +51,36 @@ public:
 			boost::archive::text_oarchive output_arch(ofs);
 
 			output_arch << p_generator;
+			NumSimulations.push_back(p_generator->GetNumEvaluations());
 		}
 
+		delete p_generator;
 
+        LookupTableGenerator<4>* p_generatorReader;
+        for(unsigned i=0;i<testSize;i++)
+        {
+
+            std::string archive_filename = handler.GetOutputDirectoryFullPath() + "Generator_"
+                 + boost::lexical_cast<std::string>(NumSimulations[i]) + "_Evals.arch";
+
+            std::cout<<"Filepath is"<<archive_filename<<std::endl;
+            // Create an input archive
+            std::ifstream ifs(archive_filename.c_str(), std::ios::binary);
+            boost::archive::text_iarchive input_arch(ifs);
+
+            // restore from the archive
+            std::cout << "Loading from archive " << NumSimulations[i] << " evaluations." << std::endl;
+            input_arch >> p_generatorReader;
+
+            std::vector<c_vector<double, 4u> > points = p_generatorReader->GetParameterPoints();
+            std::vector<std::vector<double> > values = p_generatorReader->GetFunctionValues();
+
+            TS_ASSERT_EQUALS(points.size(), NumSimulations[i]);
+            TS_ASSERT_EQUALS(values.size(), NumSimulations[i]);
+
+
+        }
+        delete p_generatorReader;
     }
 
  };
