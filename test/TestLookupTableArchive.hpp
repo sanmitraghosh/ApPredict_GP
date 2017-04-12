@@ -72,7 +72,7 @@ public:
 
     	// Load the number of simulations that were performed.
     	std::string archive_filename_num_evals = handler.GetOutputDirectoryFullPath() + "NumbersOfEvaluations.arch";
-    	std::ifstream ifs_num_evals(archive_filename.c_str(), std::ios::binary);
+    	std::ifstream ifs_num_evals(archive_filename_num_evals.c_str(), std::ios::binary);
     	boost::archive::text_iarchive input_arch_num_evals(ifs_num_evals);
 
     	std::vector<unsigned> num_evaluations;
