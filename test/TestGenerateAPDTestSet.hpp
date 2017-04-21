@@ -64,7 +64,7 @@ public:
 		param.push_back(p_model->GetParameter("membrane_slow_delayed_rectifier_potassium_current_conductance"));
 		param.push_back(p_model->GetParameter("membrane_L_type_calcium_current_conductance"));
 
-		// This bit of code is to setup Read Write to fle
+		// This bit of code is to setup Read / Write to file
 		ColumnDataReader reader("projects/ApPredict_GP/test/data", "testunlimited",false);
 		std::vector<double> Block_gNa = reader.GetValues("g_Na");
 		std::vector<double> Block_gKr = reader.GetValues("g_Kr");
