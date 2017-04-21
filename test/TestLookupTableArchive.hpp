@@ -100,28 +100,23 @@ public:
 		}
 
 		delete p_generator;
-
-<<<<<<< HEAD
 		//Now use the different lookuptables to create a nice error (CHaste vs ApPredict) learning curve
 
 		std::vector<double> L1error;
         LookupTableGenerator<4>* p_generatorReader;
         for(unsigned i=0;i<testSize;i++)
-=======
+
 		// Now archive the number of simulations that were performed.
 		std::string archive_filename_num_evals = handler.GetOutputDirectoryFullPath() + "NumbersOfEvaluations.arch";
 		std::ofstream ofs_2(archive_filename_num_evals.c_str());
 		boost::archive::text_oarchive output_arch_2(ofs_2);
 		output_arch_2 << num_simulations;
     }
-
-
     // This should be a completely independent test (with no member variables carried across)
     // to check that we can still load up these generators with a fresh simulation later on.
     void TestLoadingGenerators() throw(Exception)
     {
     	OutputFileHandler handler("TestLookupTableArchiving_GP",false);
-
     	// Load the number of simulations that were performed.
     	std::string archive_filename_num_evals = handler.GetOutputDirectoryFullPath() + "NumbersOfEvaluations.arch";
     	std::ifstream ifs_num_evals(archive_filename_num_evals.c_str(), std::ios::binary);
@@ -129,10 +124,7 @@ public:
 
     	std::vector<unsigned> num_evaluations;
     	input_arch_num_evals >> num_evaluations;
-
-
         for(unsigned i=0;i<num_evaluations.size();i++)
->>>>>>> refs/remotes/origin/master
         {
         	LookupTableGenerator<4>* p_generator_read_in;
 
@@ -148,7 +140,7 @@ public:
             std::cout << "Loading from archive " << num_evaluations[i] << " evaluations." << std::endl;
             input_arch >> p_generator_read_in;
 
-<<<<<<< HEAD
+
             std::vector<c_vector<double, 4u> > points = p_generatorReader->GetParameterPoints();
             std::vector<std::vector<double> > values = p_generatorReader->GetFunctionValues();
 
@@ -159,7 +151,7 @@ public:
             TS_ASSERT_EQUALS(apd_values.size(),parameter_values.size());
             std::vector<double> L1dist;
 
-                //Implement L1 error
+            //Implement L1 error
                 for(unsigned j=0;j<apd_values.size();j++)
                 {
                     L1dist.push_back(std::abs(CHASTEapd[j]-apd_values[j][0]));
@@ -169,7 +161,7 @@ public:
              mpTestWriter->PutVariable(time_var_id, i);
              mpTestWriter->PutVariable(interperr_var_id, L1error[i]);
              mpTestWriter->AdvanceAlongUnlimitedDimension();
-=======
+
             std::vector<c_vector<double, 4u> > points = p_generator_read_in->GetParameterPoints();
             std::vector<std::vector<double> > values = p_generator_read_in->GetFunctionValues();
 
@@ -177,7 +169,7 @@ public:
             TS_ASSERT_EQUALS(values.size(), num_evaluations[i]);
 
             delete p_generator_read_in;
->>>>>>> refs/remotes/origin/master
+
         }
 
     }
