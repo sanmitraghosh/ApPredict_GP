@@ -18,18 +18,17 @@
 #include "ohara_rudy_2011_endoOpt.hpp"
 #include "ohara_rudy_2011_endoCvode.hpp"
 #include "ohara_rudy_2011_endoCvodeOpt.hpp"
-
+#include "SingleActionPotentialPrediction.hpp"
 #include "FakePetscSetup.hpp"
 #include <iostream>
 #include <fstream>
 #include <numeric>
 #include <cmath>
 #include <boost/lexical_cast.hpp>
-class TestSingleCellTutorial : public CxxTest::TestSuite
+class TestODEsolve : public CxxTest::TestSuite
 {
-private:
-    ColumnDataWriter* mpTestWriter;
-    //ColumnDataReader* mpTestReader;
+
+
 public:
     void TestOHaraSimulation() throw(Exception)
     {
@@ -74,10 +73,10 @@ public:
 
 
         // This bit of code is a sanity checker
-        p_model->SetParameter("membrane_fast_sodium_current_conductance", Block_gNa[38]*param[0]);
-        p_model->SetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance", Block_gKr[38]*param[1]);
-        p_model->SetParameter("membrane_slow_delayed_rectifier_potassium_current_conductance", Block_gKs[38]*param[2]);
-        p_model->SetParameter("membrane_L_type_calcium_current_conductance", Block_gCal[38]*param[3]);
+        p_model->SetParameter("membrane_fast_sodium_current_conductance", Block_gNa[35]*param[0]);
+        p_model->SetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance", Block_gKr[35]*param[1]);
+        p_model->SetParameter("membrane_slow_delayed_rectifier_potassium_current_conductance", Block_gKs[35]*param[2]);
+        p_model->SetParameter("membrane_L_type_calcium_current_conductance", Block_gCal[35]*param[3]);
         std::cout<< "Block value gNa:--->"<<Block_gNa[38]<<std::endl;
         std::cout<< "Block value gKr:--->"<<Block_gKr[38]<<std::endl;
         std::cout<< "Block value gKs:--->"<<Block_gKs[38]<<std::endl;
@@ -87,7 +86,23 @@ public:
         TS_ASSERT_EQUALS(result,false);
 
         OdeSolution solution = p_model->Compute(start_time, end_time, sampling_timestep);
+        //std::cout<< "State Vars:--->"<<p_model->GetStdVecStateVariables()<<std::endl;
+        std::vector<double> StateVars=p_model->GetStdVecStateVariables();
 
+        std::cout<< "State Vars:--->"<<StateVars.size()<<std::endl;
+        p_model->SetStateVariables(StateVars);
+        result = steady_runner.RunToSteadyState();
+        TS_ASSERT_EQUALS(result,false);
+
+        solution = p_model->Compute(start_time, end_time, sampling_timestep);
+
+
+        SingleActionPotentialPrediction ap_runner(p_model);
+        ap_runner.SuppressOutput();
+        ap_runner.SetMaxNumPaces(1000u);
+        ap_runner.SetLackOfOneToOneCorrespondenceIsError();
+        ap_runner.SetVoltageThresholdForRecordingAsActionPotential(-50);
+        ap_runner.RunSteadyPacingExperiment();
         solution.WriteToFile("TestCvodeCells","ohara_rudy_2011_endoCvode","ms");
 
         unsigned voltage_index = p_model->GetSystemInformation()->GetStateVariableIndex("membrane_voltage");
@@ -97,61 +112,6 @@ public:
         std::cout<< "APD value is:--->"<<apd<<std::endl;
 
 
-         // This is where the real APD generation starts
-         mpTestWriter = new ColumnDataWriter("TestColumnDataReaderWriter", "writeAPD", false);
-         int time_var_id = 0;
-         int apd_var_id = 0;
-
-         TS_ASSERT_THROWS_NOTHING(time_var_id = mpTestWriter->DefineUnlimitedDimension("Time","msecs"));
-         TS_ASSERT_THROWS_NOTHING(apd_var_id = mpTestWriter->DefineVariable("APD","milliseconds"));
-         TS_ASSERT_THROWS_NOTHING(mpTestWriter->EndDefineMode());
-
-
-
-        for(unsigned i=0;i<Block_gNa.size();i++)
-        {
-                p_model->SetParameter("membrane_fast_sodium_current_conductance", Block_gNa[i]*param[0]);
-                p_model->SetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance", Block_gKr[i]*param[1]);
-                p_model->SetParameter("membrane_slow_delayed_rectifier_potassium_current_conductance", Block_gKs[i]*param[2]);
-                p_model->SetParameter("membrane_L_type_calcium_current_conductance", Block_gCal[i]*param[3]);
-
-
-                result = steady_runner.RunToSteadyState();
-                TS_ASSERT_EQUALS(result,false);
-
-                OdeSolution solution = p_model->Compute(start_time, end_time, sampling_timestep);
-
-                //solution.WriteToFile("TestCvodeCells","ohara_rudy_2011_endoCvode","ms");
-
-                unsigned voltage_index = p_model->GetSystemInformation()->GetStateVariableIndex("membrane_voltage");
-                std::vector<double> voltages = solution.GetVariableAtIndex(voltage_index);
-                CellProperties cell_props(voltages, solution.rGetTimes(),-50);
-                double apd = cell_props.GetLastActionPotentialDuration(90);
-                std::cout<< "APD value is:--->"<<apd<<std::endl;
-                mpTestWriter->PutVariable(time_var_id, i);
-                mpTestWriter->PutVariable(apd_var_id, apd);
-                mpTestWriter->AdvanceAlongUnlimitedDimension();
-
-
-                //double delta= std::abs(apd-MATLABapd[i]);
-                //TS_ASSERT_LESS_THAN(delta,1);
-
-
-        }
-        delete mpTestWriter;
-
-
-
-
-        /*
-        mpTestReader = new ColumnDataReader("TestColumnDataReaderWriter", "writeAPD");
-
-        std::vector<double> values_apd = mpTestReader->GetValues("APD");
-        for(unsigned i=0;i<5;i++)
-                {
-            TS_ASSERT_EQUALS(values_apd[i],50u)
-                }
-                */
 
 
 #else

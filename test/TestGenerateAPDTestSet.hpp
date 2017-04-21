@@ -18,7 +18,7 @@
 #include "ohara_rudy_2011_endoOpt.hpp"
 #include "ohara_rudy_2011_endoCvode.hpp"
 #include "ohara_rudy_2011_endoCvodeOpt.hpp"
-
+#include "SingleActionPotentialPrediction.hpp"
 #include "FakePetscSetup.hpp"
 #include <iostream>
 #include <fstream>
@@ -34,30 +34,16 @@ public:
     void TestOHaraSimulation() throw(Exception)
     {
 #ifdef CHASTE_CVODE
+
+        //Setup Model
         boost::shared_ptr<RegularStimulus> p_stimulus;
         boost::shared_ptr<EulerIvpOdeSolver> p_solver;
         boost::shared_ptr<AbstractCvodeCell> p_model(new Cellohara_rudy_2011_endoFromCellMLCvode(p_solver, p_stimulus));
         boost::shared_ptr<RegularStimulus> p_regular_stim = p_model->UseCellMLDefaultStimulus();
 
-        //unsigned TESTFLAG=1;
         std::cout<< "Stim start value is:--->"<<p_regular_stim->GetStartTime()<<std::endl;
         std::cout<< "Stim magnitude value is:--->"<<p_regular_stim->GetMagnitude()<<std::endl;
         p_regular_stim->SetPeriod(1000);
-
-
-        ColumnDataReader reader("projects/ApPredict_GP/test/data", "testunlimited",false);
-        std::vector<double> Block_gNa = reader.GetValues("g_Na");
-        std::vector<double> Block_gKr = reader.GetValues("g_Kr");
-        std::vector<double> Block_gKs = reader.GetValues("g_Ks");
-        std::vector<double> Block_gCal = reader.GetValues("g_CaL");
-        std::vector<double> MATLABapd = reader.GetValues("MatAPD");
-
-        /* Run to Limit Cycle */
-        SteadyStateRunner steady_runner(p_model);
-        steady_runner.SetMaxNumPaces(1000u);
-        bool result;
-        std::vector<double> param;
-
         p_model->SetTolerances(1e-6,1e-8);
         double max_timestep = 0.5;
         p_model->SetMaxTimestep(max_timestep);
@@ -66,6 +52,23 @@ public:
         double start_time = 0.0;
         double end_time = 1000.0;
 
+        //Get IVPs
+        SteadyStateRunner steady_runner(p_model);
+        steady_runner.SetMaxNumPaces(1000u);
+        steady_runner.RunToSteadyState();
+        OdeSolution solution = p_model->Compute(start_time, end_time, sampling_timestep);
+        std::vector<double> StateVars=p_model->GetStdVecStateVariables();
+
+        //Use Gary's Runner later for Error messages
+        SingleActionPotentialPrediction ap_runner(p_model);
+        ap_runner.SuppressOutput();
+        ap_runner.SetMaxNumPaces(1000u);
+        ap_runner.SetLackOfOneToOneCorrespondenceIsError();
+        ap_runner.SetVoltageThresholdForRecordingAsActionPotential(-50);
+        //Model Setup Finished
+
+        // Get model parameters
+        std::vector<double> param;
         param.push_back(p_model->GetParameter("membrane_fast_sodium_current_conductance"));
         param.push_back(p_model->GetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance"));
         param.push_back(p_model->GetParameter("membrane_slow_delayed_rectifier_potassium_current_conductance"));
@@ -73,31 +76,14 @@ public:
 
 
 
-        // This bit of code is a sanity checker
-        p_model->SetParameter("membrane_fast_sodium_current_conductance", Block_gNa[38]*param[0]);
-        p_model->SetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance", Block_gKr[38]*param[1]);
-        p_model->SetParameter("membrane_slow_delayed_rectifier_potassium_current_conductance", Block_gKs[38]*param[2]);
-        p_model->SetParameter("membrane_L_type_calcium_current_conductance", Block_gCal[38]*param[3]);
-        std::cout<< "Block value gNa:--->"<<Block_gNa[38]<<std::endl;
-        std::cout<< "Block value gKr:--->"<<Block_gKr[38]<<std::endl;
-        std::cout<< "Block value gKs:--->"<<Block_gKs[38]<<std::endl;
-        std::cout<< "Block value gCal:--->"<<Block_gCal[38]<<std::endl;
+        // This bit of code is to setup Read Write to fle
+        ColumnDataReader reader("projects/ApPredict_GP/test/data", "testunlimited",false);
+        std::vector<double> Block_gNa = reader.GetValues("g_Na");
+        std::vector<double> Block_gKr = reader.GetValues("g_Kr");
+        std::vector<double> Block_gKs = reader.GetValues("g_Ks");
+        std::vector<double> Block_gCal = reader.GetValues("g_CaL");
+        std::vector<double> MATLABapd = reader.GetValues("MatAPD");
 
-        result = steady_runner.RunToSteadyState();
-        TS_ASSERT_EQUALS(result,false);
-
-        OdeSolution solution = p_model->Compute(start_time, end_time, sampling_timestep);
-
-        solution.WriteToFile("TestCvodeCells","ohara_rudy_2011_endoCvode","ms");
-
-        unsigned voltage_index = p_model->GetSystemInformation()->GetStateVariableIndex("membrane_voltage");
-        std::vector<double> voltages = solution.GetVariableAtIndex(voltage_index);
-        CellProperties cell_props(voltages, solution.rGetTimes(),-50);
-        double apd = cell_props.GetLastActionPotentialDuration(90);
-        std::cout<< "APD value is:--->"<<apd<<std::endl;
-
-
-         // This is where the real APD generation starts
          mpTestWriter = new ColumnDataWriter("TestColumnDataReaderWriter", "writeAPD", false);
          int time_var_id = 0;
          int apd_var_id = 0;
@@ -107,26 +93,46 @@ public:
          TS_ASSERT_THROWS_NOTHING(mpTestWriter->EndDefineMode());
 
 
-
-        for(unsigned i=0;i<Block_gNa.size();i++)
+        double apd;
+        for(unsigned i=35;i<40;i++)//Block_gNa.size()
         {
                 p_model->SetParameter("membrane_fast_sodium_current_conductance", Block_gNa[i]*param[0]);
                 p_model->SetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance", Block_gKr[i]*param[1]);
                 p_model->SetParameter("membrane_slow_delayed_rectifier_potassium_current_conductance", Block_gKs[i]*param[2]);
                 p_model->SetParameter("membrane_L_type_calcium_current_conductance", Block_gCal[i]*param[3]);
 
+                p_model->SetStateVariables(StateVars);
+                ap_runner.RunSteadyPacingExperiment();
+                if (ap_runner.DidErrorOccur())
+                {
+                    std::string error_message = ap_runner.GetErrorMessage();
+                    std::cout << "Lookup table generator reports that " << error_message
+                              << "\n"
+                              << std::flush;
+                    // We could use different numerical codes for different errors here if we wanted to.
+                    if (error_message == "NoActionPotential_2" || error_message == "NoActionPotential_3")
+                    {
+                        // For an APD calculation failure on repolarisation put in the stimulus period.
+                        apd = 1000.0;
+                        mpTestWriter->PutVariable(time_var_id, i);
+                        mpTestWriter->PutVariable(apd_var_id, apd);
+                        mpTestWriter->AdvanceAlongUnlimitedDimension();
 
-                result = steady_runner.RunToSteadyState();
-                TS_ASSERT_EQUALS(result,false);
 
-                OdeSolution solution = p_model->Compute(start_time, end_time, sampling_timestep);
+                    }
+                    else
+                    {
+                        // For everything else (failure to depolarize "NoActionPotential_1")
+                        // just put in zero for now.
+                        mpTestWriter->PutVariable(time_var_id, i);
+                        mpTestWriter->PutVariable(apd_var_id, apd);
+                        mpTestWriter->AdvanceAlongUnlimitedDimension();
+                        apd=0.0;
+                    }
+                    continue;
+                }
 
-                //solution.WriteToFile("TestCvodeCells","ohara_rudy_2011_endoCvode","ms");
-
-                unsigned voltage_index = p_model->GetSystemInformation()->GetStateVariableIndex("membrane_voltage");
-                std::vector<double> voltages = solution.GetVariableAtIndex(voltage_index);
-                CellProperties cell_props(voltages, solution.rGetTimes(),-50);
-                double apd = cell_props.GetLastActionPotentialDuration(90);
+                apd = ap_runner.GetApd90();
                 std::cout<< "APD value is:--->"<<apd<<std::endl;
                 mpTestWriter->PutVariable(time_var_id, i);
                 mpTestWriter->PutVariable(apd_var_id, apd);
