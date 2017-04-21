@@ -55,6 +55,7 @@ public:
             Block_gCal[i]=Block_gCal[i]*p_model->GetParameter("membrane_L_type_calcium_current_conductance");
         }
         **/
+        //Compare MATLAB APDs with Chaste generated ones
 
         std::vector<c_vector<double, 4u> > parameter_values; // 4-D vector of parameter values
         for(unsigned i=0;i<Block_gNa.size();i++)
