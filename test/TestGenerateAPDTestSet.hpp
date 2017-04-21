@@ -73,7 +73,11 @@ public:
 		std::vector<double> MATLABapd = reader.GetValues("MatAPD");
 
 		mpTestWriter = new ColumnDataWriter("TestGenerateApdTestSet", "writeAPD", false);
-		int time_var_id = mpTestWriter->DefineUnlimitedDimension("Time","msecs");
+		int time_var_id = mpTestWriter->DefineUnlimitedDimension("TestPointIndex","dimensionless");
+		int gNa_var_id = mpTestWriter->DefineVariable("g_Na","dimensionless");
+		int gKr_var_id = mpTestWriter->DefineVariable("g_Kr","dimensionless");
+		int gKs_var_id = mpTestWriter->DefineVariable("g_Ks","dimensionless");
+		int gCaL_var_id = mpTestWriter->DefineVariable("g_CaL","dimensionless");
 		int apd_var_id = mpTestWriter->DefineVariable("APD","milliseconds");
 		mpTestWriter->EndDefineMode();
 
@@ -114,6 +118,10 @@ public:
 
 			std::cout<< "APD value is:--->"<<apd<<std::endl;
 			mpTestWriter->PutVariable(time_var_id, i);
+			mpTestWriter->PutVariable(gNa_var_id, Block_gNa[i]);
+			mpTestWriter->PutVariable(gKr_var_id, Block_gKr[i]);
+			mpTestWriter->PutVariable(gKs_var_id, Block_gKs[i]);
+			mpTestWriter->PutVariable(gCaL_var_id, Block_gCal[i]);
 			mpTestWriter->PutVariable(apd_var_id, apd);
 			mpTestWriter->AdvanceAlongUnlimitedDimension();
 
