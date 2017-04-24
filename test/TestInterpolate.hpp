@@ -6,21 +6,13 @@
 #include <boost/assign/list_of.hpp>
 #include <ColumnDataReader.hpp>
 #include <ColumnDataWriter.hpp>
-#include "CellProperties.hpp"
-#include "SteadyStateRunner.hpp"
-#include "AbstractCvodeCell.hpp"
-#include "AbstractCardiacCell.hpp"
-#include "RegularStimulus.hpp"
-#include "ZeroStimulus.hpp"
-#include "EulerIvpOdeSolver.hpp"
+
 #include "CheckpointArchiveTypes.hpp"
 
-#include "SetupModel.hpp"
-#include "SingleActionPotentialPrediction.hpp"
 #include "LookupTableGenerator.hpp"
 #include "LookupTableReader.hpp"
 
-#include "ohara_rudy_2011_endoCvode.hpp"
+
 //#include "FakePetscSetup.hpp"
 #include <iostream>
 #include <fstream>
@@ -29,79 +21,100 @@
 #include <boost/lexical_cast.hpp>
 class TestInterpolate : public CxxTest::TestSuite
 {
+private:
+    ColumnDataWriter* mpTestWriter;
+    ColumnDataReader* mpTestReader;
 public:
-    void TestInterpolateVsGP() throw(Exception)
-    {
-        // Define the O'hara model
-        boost::shared_ptr<RegularStimulus> p_stimulus;
-        boost::shared_ptr<EulerIvpOdeSolver> p_solver;
-        boost::shared_ptr<AbstractCvodeCell> p_model(new Cellohara_rudy_2011_endoFromCellMLCvode(p_solver, p_stimulus));
-
-        //Read the blocking values as generated in MATLAB
-
-        ColumnDataReader reader("projects/ApPredict_GP/test/data", "testunlimited",false);
-        std::vector<double> Block_gNa = reader.GetValues("g_Na");
-        std::vector<double> Block_gKr = reader.GetValues("g_Kr");
-        std::vector<double> Block_gKs = reader.GetValues("g_Ks");
-        std::vector<double> Block_gCal = reader.GetValues("g_CaL");
-        std::vector<double> MATLABapd = reader.GetValues("MatAPD");
-        
-        /** Lookup tables work with scalings not raw numbers.
-        for (unsigned i=0;i<Block_gNa.size();i++)
+   void TestInterpolateVsGPfromArchive() throw(Exception)
         {
-            Block_gNa[i]=Block_gNa[i]*p_model->GetParameter("membrane_fast_sodium_current_conductance");
-            Block_gKr[i]=Block_gKr[i]*p_model->GetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance");
-            Block_gKs[i]=Block_gKs[i]*p_model->GetParameter("membrane_slow_delayed_rectifier_potassium_current_conductance");
-            Block_gCal[i]=Block_gCal[i]*p_model->GetParameter("membrane_L_type_calcium_current_conductance");
+                std::vector<double> L1error;
+                unsigned APDTestSetSize=10u;
+                ColumnDataReader reader("projects/ApPredict_GP/test/data", "matlabdata",false);
+
+                std::vector<double> Block_gNa = reader.GetValues("g_Na");
+                std::vector<double> Block_gKr = reader.GetValues("g_Kr");
+                std::vector<double> Block_gKs = reader.GetValues("g_Ks");
+                std::vector<double> Block_gCal = reader.GetValues("g_CaL");
+                //std::vector<double> MATLABapd = reader.GetValues("MatAPD");
+                mpTestReader = new ColumnDataReader("TestGenerateApdTestSet", "writeAPD");
+                std::vector<double> CHASTEapd = mpTestReader->GetValues("APD");
+                mpTestWriter = new ColumnDataWriter("InterpolationError", "InterpolationError", false);
+                int time_var_id = 0;
+                int interperr_var_id = 0;
+
+                TS_ASSERT_THROWS_NOTHING(time_var_id = mpTestWriter->DefineUnlimitedDimension("TestPointIndex","dimensionless"));
+                TS_ASSERT_THROWS_NOTHING(interperr_var_id = mpTestWriter->DefineVariable("LoneError","milliseconds"));
+                TS_ASSERT_THROWS_NOTHING(mpTestWriter->EndDefineMode());
+
+                //Now generate lookupTables of diff sizes and save them to disk
+
+                std::vector<c_vector<double, 4u> > parameter_values; // 4-D vector of parameter values
+                for(unsigned i=0;i<Block_gNa.size();i++)//Block_gNa.size()
+                {
+                    c_vector<double,4u> blocks;
+                    blocks[0]=Block_gNa[i];
+                    blocks[1]=Block_gKr[i];
+                    blocks[2]=Block_gKs[i];
+                    blocks[3]=Block_gCal[i];
+                    parameter_values.push_back(blocks);
+                }
+
+
+                OutputFileHandler handler("TestLookupTableArchiving_GP",false);
+                // Load the number of simulations that were performed.
+                std::string archive_filename_num_evals = handler.GetOutputDirectoryFullPath() + "NumbersOfEvaluations.arch";
+                std::ifstream ifs_num_evals(archive_filename_num_evals.c_str(), std::ios::binary);
+                boost::archive::text_iarchive input_arch_num_evals(ifs_num_evals);
+
+                std::vector<unsigned> num_evaluations;
+                input_arch_num_evals >> num_evaluations;
+                for(unsigned i=0;i<num_evaluations.size();i++)
+                {
+                    LookupTableGenerator<4>* p_generator_read_in;
+
+                    std::string archive_filename = handler.GetOutputDirectoryFullPath() + "Generator_"
+                         + boost::lexical_cast<std::string>(num_evaluations[i]) + "_Evals.arch";
+
+                    std::cout<<"Filepath is"<<archive_filename<<std::endl;
+                    // Create an input archive
+                    std::ifstream ifs(archive_filename.c_str(), std::ios::binary);
+                    boost::archive::text_iarchive input_arch(ifs);
+
+                    // restore from the archive
+                    std::cout << "Loading from archive " << num_evaluations[i] << " evaluations." << std::endl;
+                    input_arch >> p_generator_read_in;
+
+
+                    // Interpolate ********* Gary pls Check********************
+                    std::vector<std::vector<double> > apd_values = p_generator_read_in->Interpolate(parameter_values);
+                    TS_ASSERT_EQUALS(apd_values.size(),parameter_values.size());
+                    std::vector<double> L1dist;
+                    std::cout << "CHASTEapd Test Size:"<<CHASTEapd.size()<<std::endl<< std::flush;
+                    std::cout << "APD interpolate Size:"<<apd_values.size()<<std::endl<< std::flush;
+                    //Implement L1 error
+                        for(unsigned j=0;j<apd_values.size();j++)
+                        {
+                            L1dist.push_back(std::abs(CHASTEapd[j]-apd_values[j][0]));
+                            //std::cout << "The error L1dist:"<<L1dist[j]<<std::endl<< std::flush;
+                        }
+                     double Error=(std::accumulate(L1dist.begin(), L1dist.end(), 0.0f) )/L1dist.size();
+                     L1error.push_back(Error);
+                     std::cout << "The error Interpolate Vs GP is: \n"<<Error<<std::endl<< std::flush;
+                     mpTestWriter->PutVariable(time_var_id, i+1);
+                     mpTestWriter->PutVariable(interperr_var_id, Error);
+                     mpTestWriter->AdvanceAlongUnlimitedDimension();
+
+                    std::vector<c_vector<double, 4u> > points = p_generator_read_in->GetParameterPoints();
+                    std::vector<std::vector<double> > values = p_generator_read_in->GetFunctionValues();
+
+                    TS_ASSERT_EQUALS(points.size(), num_evaluations[i]);
+                    TS_ASSERT_EQUALS(values.size(), num_evaluations[i]);
+
+                    delete p_generator_read_in;
+                }
+                delete mpTestWriter;
+                delete mpTestReader;
         }
-        **/
-        //Compare MATLAB APDs with Chaste generated ones
-
-        std::vector<c_vector<double, 4u> > parameter_values; // 4-D vector of parameter values
-        for(unsigned i=0;i<Block_gNa.size();i++)
-        {
-        	c_vector<double,4u> blocks;
-            blocks[0]=Block_gNa[i];
-            blocks[1]=Block_gKr[i];
-            blocks[2]=Block_gKs[i];
-            blocks[3]=Block_gCal[i];
-            parameter_values.push_back(blocks);
-        }
-        
-        // Get the generator ready
-        unsigned model_index = 6u;// O'Hara Rudy (table generated for 1 Hz at present)
-
-        std::string file_name = "4d_test";
-        LookupTableGenerator<4> generator(model_index, file_name, "TestApPredict_GPInterpolate");
-        
-        // N.B. These have to be in same order as the 'block' vector above for the lookup to make any sense.
-        generator.SetParameterToScale("membrane_fast_sodium_current_conductance", 0.0 , 1.0);
-        generator.SetParameterToScale("membrane_rapid_delayed_rectifier_potassium_current_conductance", 0.0 , 1.0);
-        generator.SetParameterToScale("membrane_slow_delayed_rectifier_potassium_current_conductance", 0.0 , 1.0);
-        generator.SetParameterToScale("membrane_L_type_calcium_current_conductance", 0.0 , 1.0);
-                
-        generator.SetMaxNumPaces(1000u);
-        generator.SetPacingFrequency(1.0); // 1Hz
-        generator.SetMaxNumEvaluations(100u); // restrict to 5 ODE evaluations (N.B. it will evaluate more as it does all the corners first.)
-        generator.AddQuantityOfInterest(Apd90, 0.5 /*ms*/);
-        
-        generator.GenerateLookupTable();
-
-        // Interpolate ********* Gary pls Check********************
-        std::vector<std::vector<double> > apd_values = generator.Interpolate(parameter_values);
-        TS_ASSERT_EQUALS(apd_values.size(),parameter_values.size());
-        std::vector<double> L1dist;
-
-        //Implement L1 error with matlab
-        for(unsigned i=0;i<apd_values.size();i++)
-        {
-            L1dist.push_back(std::abs(MATLABapd[i]-apd_values[i][0]));
-        }
-        double L1error = (std::accumulate(L1dist.begin(), L1dist.end(), 0.0f) )/L1dist.size();
-        std::cout << "The error Interpolate Vs GP is:"<<L1error<<std::endl<< std::flush;
-
-    }
-
  };
 #endif /*TESTINTERPOLATE_HPP_*/
 

@@ -65,7 +65,7 @@ public:
 		param.push_back(p_model->GetParameter("membrane_L_type_calcium_current_conductance"));
 
 		// This bit of code is to setup Read / Write to file
-		ColumnDataReader reader("projects/ApPredict_GP/test/data", "testunlimited",false);
+		ColumnDataReader reader("projects/ApPredict_GP/test/data", "matlabdata",false);
 		std::vector<double> Block_gNa = reader.GetValues("g_Na");
 		std::vector<double> Block_gKr = reader.GetValues("g_Kr");
 		std::vector<double> Block_gKs = reader.GetValues("g_Ks");
@@ -83,7 +83,7 @@ public:
 
 
 		double apd;
-		for(unsigned i=35;i<40;i++)//Block_gNa.size()
+		for(unsigned i=0;i<Block_gNa.size();i++)//Block_gNa.size()
 		{
 			p_model->SetParameter("membrane_fast_sodium_current_conductance", Block_gNa[i]*param[0]);
 			p_model->SetParameter("membrane_rapid_delayed_rectifier_potassium_current_conductance", Block_gKr[i]*param[1]);
@@ -117,7 +117,7 @@ public:
 			}
 
 			std::cout<< "APD value is:--->"<<apd<<std::endl;
-			mpTestWriter->PutVariable(time_var_id, i);
+			mpTestWriter->PutVariable(time_var_id, i+1);
 			mpTestWriter->PutVariable(gNa_var_id, Block_gNa[i]);
 			mpTestWriter->PutVariable(gKr_var_id, Block_gKr[i]);
 			mpTestWriter->PutVariable(gKs_var_id, Block_gKs[i]);
