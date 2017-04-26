@@ -30,8 +30,9 @@ public:
         OutputFileHandler handler("TestLookupTableArchiving_GP",false);
         unsigned model_index = 6u; // O'Hara Rudy (table generated for 1 Hz at present)
         unsigned batchSize = 1000u;
-        unsigned testSize = 20u; // Remember Evaluation data set size= testSize*batchSize
+        unsigned testSize = 8u; // Remember Evaluation data set size= testSize*batchSize
         unsigned num_evals_before_save = batchSize;
+        unsigned Init_Pace=100u;
         std::vector<unsigned> num_simulations;
         LookupTableGenerator<4>* const p_generator =
         						new LookupTableGenerator<4>(model_index, "all_box_points_so_far", "TestLookupTableArchiving_GP");
@@ -40,7 +41,7 @@ public:
 		p_generator->SetParameterToScale("membrane_rapid_delayed_rectifier_potassium_current_conductance", 0.0 , 1.0);
 		p_generator->SetParameterToScale("membrane_slow_delayed_rectifier_potassium_current_conductance", 0.0 , 1.0);
 		p_generator->SetParameterToScale("membrane_L_type_calcium_current_conductance", 0.0 , 1.0);
-		p_generator->SetMaxNumPaces(1000u);
+		p_generator->SetMaxNumPaces(Init_Pace);
 		p_generator->SetPacingFrequency(1.0); // 1Hz
 		p_generator->AddQuantityOfInterest(Apd90, 0.5 /*ms*/); // QoI and tolerance to stop refinement
 

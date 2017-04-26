@@ -28,7 +28,7 @@ public:
    void TestInterpolateVsGPfromArchive() throw(Exception)
         {
                 std::vector<double> L1error;
-                unsigned APDTestSetSize=10u;
+                //unsigned APDTestSetSize=10u;
                 ColumnDataReader reader("projects/ApPredict_GP/test/data", "matlabdata",false);
 
                 std::vector<double> Block_gNa = reader.GetValues("g_Na");
@@ -68,6 +68,8 @@ public:
 
                 std::vector<unsigned> num_evaluations;
                 input_arch_num_evals >> num_evaluations;
+                std::vector<double> L1dist;
+                double Error;
                 for(unsigned i=0;i<num_evaluations.size();i++)
                 {
                     LookupTableGenerator<4>* p_generator_read_in;
@@ -88,16 +90,23 @@ public:
                     // Interpolate ********* Gary pls Check********************
                     std::vector<std::vector<double> > apd_values = p_generator_read_in->Interpolate(parameter_values);
                     TS_ASSERT_EQUALS(apd_values.size(),parameter_values.size());
-                    std::vector<double> L1dist;
+
                     std::cout << "CHASTEapd Test Size:"<<CHASTEapd.size()<<std::endl<< std::flush;
                     std::cout << "APD interpolate Size:"<<apd_values.size()<<std::endl<< std::flush;
                     //Implement L1 error
                         for(unsigned j=0;j<apd_values.size();j++)
                         {
+                            if ( CHASTEapd[j]==0 || CHASTEapd[j]==1000 )
+                            {
+                                L1dist.push_back(0.0);
+                            }
+                            else
+                            {
                             L1dist.push_back(std::abs(CHASTEapd[j]-apd_values[j][0]));
                             //std::cout << "The error L1dist:"<<L1dist[j]<<std::endl<< std::flush;
+                            }
                         }
-                     double Error=(std::accumulate(L1dist.begin(), L1dist.end(), 0.0f) )/L1dist.size();
+                      Error=(std::accumulate(L1dist.begin(), L1dist.end(), 0.0f) )/L1dist.size();
                      L1error.push_back(Error);
                      std::cout << "The error Interpolate Vs GP is: \n"<<Error<<std::endl<< std::flush;
                      mpTestWriter->PutVariable(time_var_id, i+1);

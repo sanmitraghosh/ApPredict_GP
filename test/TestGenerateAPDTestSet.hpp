@@ -41,10 +41,10 @@ public:
 		double sampling_timestep = 0.1;//max_timestep;
 		double start_time = 0.0;
 		double end_time = 1000.0;
-
+		unsigned Init_Pace=100u;
 		//Get IVPs
 		SteadyStateRunner steady_runner(p_model);
-		steady_runner.SetMaxNumPaces(1000u);
+		steady_runner.SetMaxNumPaces(Init_Pace);
 		steady_runner.RunToSteadyState();
 		OdeSolution solution = p_model->Compute(start_time, end_time, sampling_timestep);
 		std::vector<double> StateVars=p_model->GetStdVecStateVariables();
@@ -52,7 +52,7 @@ public:
 		//Use Gary's Runner later for Error messages
 		SingleActionPotentialPrediction ap_runner(p_model);
 		ap_runner.SuppressOutput();
-		ap_runner.SetMaxNumPaces(1000u);
+		ap_runner.SetMaxNumPaces(Init_Pace);
 		ap_runner.SetLackOfOneToOneCorrespondenceIsError();
 		ap_runner.SetVoltageThresholdForRecordingAsActionPotential(-50);
 		//Model Setup Finished
@@ -132,17 +132,6 @@ public:
 		delete mpTestWriter;
 
 
-
-
-		/*
-        mpTestReader = new ColumnDataReader("TestColumnDataReaderWriter", "writeAPD");
-
-        std::vector<double> values_apd = mpTestReader->GetValues("APD");
-        for(unsigned i=0;i<5;i++)
-                {
-            TS_ASSERT_EQUALS(values_apd[i],50u)
-                }
-		 */
 
 
 #else
