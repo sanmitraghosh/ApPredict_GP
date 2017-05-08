@@ -176,25 +176,13 @@ public:
                     }
                 }
             }
-            std::cout << "Confusion Matrix" << std::endl;
-            std::cout << "AP--AP---> \t" << c1 << std::endl
-                      << std::flush;
-            std::cout << "AP---0---> \t" << c2 << std::endl
-                      << std::flush;
-            std::cout << "AP---1000---> \t" << c3 << std::endl
-                      << std::flush;
-            std::cout << "0---AP---> \t" << c4 << std::endl
-                      << std::flush;
-            std::cout << "0---0---> \t" << c5 << std::endl
-                      << std::flush;
-            std::cout << "0---1000---> \t" << c6 << std::endl
-                      << std::flush;
-            std::cout << "1000---AP---> \t" << c7 << std::endl
-                      << std::flush;
-            std::cout << "1000---0---> \t" << c8 << std::endl
-                      << std::flush;
-            std::cout << "10000---1000---> \t" << c9 << std::endl
-                      << std::flush;
+            std::cout << "Confusion Matrix:" << std::endl;
+            std::cout << "\t\tInterpolated" << std::endl;
+            std::cout << "\t\tAP\tNoDep\tNoRep" << std::endl;
+            std::cout << "Test\tAP\t" << c1 << "\t" << c2 << "\t" << c3 << std::endl;
+            std::cout << "Set\tNoDep\t" << c4 << "\t" << c5 << "\t" << c6 << std::endl;
+            std::cout << "\tNoRep\t" << c7 << "\t" << c8 << "\t" << c9 << std::endl;
+
             double error = (std::accumulate(L1dist.begin(), L1dist.end(), 0.0f)) / L1dist.size();
             L1error.push_back(error);
             std::cout << "The error Interpolate Vs GP is: \n"
