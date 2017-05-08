@@ -183,15 +183,15 @@ public:
             std::cout << "Set\tNoDep\t" << c4 << "\t" << c5 << "\t" << c6 << std::endl;
             std::cout << "\tNoRep\t" << c7 << "\t" << c8 << "\t" << c9 << std::endl;
 
+            // Calculate and print the L1 error
             double error = (std::accumulate(L1dist.begin(), L1dist.end(), 0.0f)) / L1dist.size();
             L1error.push_back(error);
-            std::cout << "The error Interpolate Vs GP is: \n"
-                      << error << std::endl
-                      << std::flush;
+            std::cout << "The error for interpolate Vs test data in the AP-AP box is:\t" << error << std::endl;
+
+            // Write all the results to file
             mpTestWriter->PutVariable(time_var_id, i + 1);
             mpTestWriter->PutVariable(interperr_var_id, error);
             mpTestWriter->PutVariable(conf_box_one, c1);
-
             mpTestWriter->PutVariable(conf_box_two, c2);
             mpTestWriter->PutVariable(conf_box_three, c3);
             mpTestWriter->PutVariable(conf_box_four, c4);
@@ -202,9 +202,9 @@ public:
             mpTestWriter->PutVariable(conf_box_nine, c9);
             mpTestWriter->AdvanceAlongUnlimitedDimension();
 
+            // Check that we have the right number of results here.
             std::vector<c_vector<double, 4u> > points = p_generator_read_in->GetParameterPoints();
             std::vector<std::vector<double> > values = p_generator_read_in->GetFunctionValues();
-
             TS_ASSERT_EQUALS(points.size(), num_evaluations[i]);
             TS_ASSERT_EQUALS(values.size(), num_evaluations[i]);
 
