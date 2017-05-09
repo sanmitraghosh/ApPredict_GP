@@ -183,10 +183,13 @@ public:
             std::cout << "Set\tNoDep\t" << c4 << "\t" << c5 << "\t" << c6 << std::endl;
             std::cout << "\tNoRep\t" << c7 << "\t" << c8 << "\t" << c9 << std::endl;
 
+            // Check all of the interpolated points have been categorised somewhere.
+            assert(c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8 + c9 == CHASTEapd.size());
+
             // Calculate and print the L1 error
             double error = (std::accumulate(L1dist.begin(), L1dist.end(), 0.0f)) / L1dist.size();
             L1error.push_back(error);
-            std::cout << "The error for interpolate Vs test data in the AP-AP box is:\t" << error << std::endl;
+            std::cout << "The error for interpolate Vs test data in the AP-AP box is:\t" << error << " ms" << std::endl;
 
             // Write all the results to file
             mpTestWriter->PutVariable(time_var_id, i + 1);
