@@ -52,7 +52,8 @@ public:
         double sampling_timestep = 0.1; // max_timestep;
         double start_time = 0.0;
         double end_time = 1000.0;
-        unsigned Init_Pace = 100u;
+        unsigned max_num_paces = 100u;
+
         // Get IVPs
         SteadyStateRunner steady_runner(p_model);
         steady_runner.SetMaxNumPaces(Init_Pace);
@@ -63,7 +64,7 @@ public:
         // Use Gary's Runner later for Error messages
         SingleActionPotentialPrediction ap_runner(p_model);
         ap_runner.SuppressOutput();
-        ap_runner.SetMaxNumPaces(Init_Pace);
+        ap_runner.SetMaxNumPaces(max_num_paces);
         ap_runner.SetLackOfOneToOneCorrespondenceIsError();
         double threshold_voltage = LookupTableGenerator<4>::DetectVoltageThresholdForActionPotential(p_model);
         ap_runner.SetVoltageThresholdForRecordingAsActionPotential(threshold_voltage);

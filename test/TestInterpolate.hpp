@@ -115,7 +115,14 @@ public:
             input_arch >> p_generator_read_in;
 
             // Interpolate ********* Gary pls Check********************
-            std::vector<std::vector<double> > apd_values = p_generator_read_in->Interpolate(parameter_values);
+            std::vector<std::vector<double> > interpolated_values = p_generator_read_in->Interpolate(parameter_values);
+
+            // Put in a normal standard vector over the parameter sets
+            std::vector<double> apd_values;
+            for (unsigned j = 0; j < interpolated_values.size(); j++)
+            {
+                apd_values.push_back(interpolated_values[j][0]);
+            }
             TS_ASSERT_EQUALS(apd_values.size(), parameter_values.size());
 
             std::cout << "CHASTEapd Test Size:" << CHASTEapd.size() << std::endl
@@ -129,50 +136,62 @@ public:
             {
                 if (fabs(CHASTEapd[j]) > 1e-12 && fabs(CHASTEapd[j] - 1000) > 1e-12)
                 {
-                    if (fabs(apd_values[j][0]) > 1e-12 && fabs(apd_values[j][0] - 1000) > 1e-12)
+                    if (fabs(apd_values[j]) > 1e-12 && fabs(apd_values[j] - 1000) > 1e-12)
                     {
-                        double error_this_APD = std::abs(CHASTEapd[j] - apd_values[j][0]);
+                        double error_this_APD = std::abs(CHASTEapd[j] - apd_values[j]);
                         L1dist.push_back(error_this_APD);
                         c1++;
                     }
-                    else if (fabs(apd_values[j][0]) < 1e-12)
+                    else if (fabs(apd_values[j]) < 1e-12)
                     {
                         c2++;
                     }
-                    else
+                    else if (fabs(apd_values[j] - 1000) < 1e-12)
                     {
                         c3++;
+                    }
+                    else
+                    {
+                        NEVER_REACHED;
                     }
                 }
 
                 else if (fabs(CHASTEapd[j]) < 1e-12)
                 {
-                    if (fabs(apd_values[j][0]) < 1e-12)
+                    if (fabs(apd_values[j]) > 1e-12 && fabs(apd_values[j] - 1000) > 1e-12)
+                    {
+                        c4++;
+                    }
+                    else if (fabs(apd_values[j]) < 1e-12)
                     {
                         c5++;
                     }
-                    else if (fabs(apd_values[j][0] - 1000) < 1e-12)
+                    else if (fabs(apd_values[j] - 1000) < 1e-12)
                     {
                         c6++;
                     }
                     else
                     {
-                        c4++;
+                        NEVER_REACHED;
                     }
                 }
                 else if (fabs(CHASTEapd[j] - 1000) < 1e-12)
                 {
-                    if (fabs(apd_values[j][0] - 1000) < 1e-12)
+                    if (apd_values[j] > 1e-12 && apd_values[j] < 1000 - 1e-12)
                     {
-                        c9++;
+                        c7++;
                     }
-                    else if (fabs(apd_values[j][0]) < 1e-12)
+                    else if (fabs(apd_values[j]) < 1e-12)
                     {
                         c8++;
                     }
+                    else if (fabs(apd_values[j] - 1000) < 1e-12)
+                    {
+                        c9++;
+                    }
                     else
                     {
-                        c7++;
+                        NEVER_REACHED;
                     }
                 }
             }
