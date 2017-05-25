@@ -24,7 +24,7 @@ public:
         OutputFileHandler handler("TestLookupTableArchiving_GP", false);
         unsigned model_index = 6u; // O'Hara Rudy (table generated for 1 Hz at present)
         unsigned evals_per_loop = 20 * pow(2, DIM); // Min Number of evaluations to add on each loop
-        unsigned num_loops = 100u; // Remember Evaluation data set size= testSize*batchSize
+        unsigned num_loops = 200u; // Remember Evaluation data set size= testSize*batchSize
         unsigned max_num_paces = 100u; // TODO: change to 1000, but this OK for speed for now.
         std::vector<unsigned> num_simulations;
 

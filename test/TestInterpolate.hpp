@@ -39,33 +39,19 @@ public:
         std::vector<double> Block_gKs = mpTestReader->GetValues("g_Ks");
         std::vector<double> Block_gCal = mpTestReader->GetValues("g_CaL");
 
-        mpTestWriter = new ColumnDataWriter("InterpolationError", "InterpolationError", false);
-        int time_var_id = 0;
-        int interperr_var_id = 0;
-        unsigned conf_box_one = 0;
-        unsigned conf_box_two = 0;
-        unsigned conf_box_three = 0;
-        unsigned conf_box_four = 0;
-        unsigned conf_box_five = 0;
-        unsigned conf_box_six = 0;
-        unsigned conf_box_seven = 0;
-        unsigned conf_box_eight = 0;
-        unsigned conf_box_nine = 0;
-
-        TS_ASSERT_THROWS_NOTHING(time_var_id = mpTestWriter->DefineUnlimitedDimension("TestPointIndex", "dimensionless"));
-        TS_ASSERT_THROWS_NOTHING(interperr_var_id = mpTestWriter->DefineVariable("LoneError", "milliseconds"));
-        TS_ASSERT_THROWS_NOTHING(conf_box_one = mpTestWriter->DefineVariable("APAP", "dimensionless"));
-        TS_ASSERT_THROWS_NOTHING(conf_box_two = mpTestWriter->DefineVariable("APNoDep", "dimensionless"));
-        TS_ASSERT_THROWS_NOTHING(conf_box_three = mpTestWriter->DefineVariable("APNoRep", "dimensionless"));
-        TS_ASSERT_THROWS_NOTHING(conf_box_four = mpTestWriter->DefineVariable("NoDepAP", "dimensionless")); //change this to meaningful names
-        TS_ASSERT_THROWS_NOTHING(conf_box_five = mpTestWriter->DefineVariable("NoDepNoDep", "dimensionless"));
-        TS_ASSERT_THROWS_NOTHING(conf_box_six = mpTestWriter->DefineVariable("NoDepNoRep", "dimensionless"));
-        TS_ASSERT_THROWS_NOTHING(conf_box_seven = mpTestWriter->DefineVariable("NoRepAP", "dimensionless"));
-        TS_ASSERT_THROWS_NOTHING(conf_box_eight = mpTestWriter->DefineVariable("NoRepNoDep", "dimensionless"));
-        TS_ASSERT_THROWS_NOTHING(conf_box_nine = mpTestWriter->DefineVariable("NoRepNoRep", "dimensionless"));
-        TS_ASSERT_THROWS_NOTHING(mpTestWriter->EndDefineMode());
-
-        //Now generate lookupTables of diff sizes and save them to disk
+        mpTestWriter = new ColumnDataWriter("InterpolationError", "InterpolationError");
+        int time_var_id = mpTestWriter->DefineUnlimitedDimension("NumEvaluations", "dimensionless");
+        int interperr_var_id = mpTestWriter->DefineVariable("LOneError", "milliseconds");
+        unsigned conf_box_one = mpTestWriter->DefineVariable("APAP", "dimensionless");
+        unsigned conf_box_two = mpTestWriter->DefineVariable("APNoDep", "dimensionless");
+        unsigned conf_box_three = mpTestWriter->DefineVariable("APNoRep", "dimensionless");
+        unsigned conf_box_four = mpTestWriter->DefineVariable("NoDepAP", "dimensionless");
+        unsigned conf_box_five = mpTestWriter->DefineVariable("NoDepNoDep", "dimensionless");
+        unsigned conf_box_six = mpTestWriter->DefineVariable("NoDepNoRep", "dimensionless");
+        unsigned conf_box_seven = mpTestWriter->DefineVariable("NoRepAP", "dimensionless");
+        unsigned conf_box_eight = mpTestWriter->DefineVariable("NoRepNoDep", "dimensionless");
+        unsigned conf_box_nine = mpTestWriter->DefineVariable("NoRepNoRep", "dimensionless");
+        mpTestWriter->EndDefineMode();
 
         std::vector<c_vector<double, 4u> > parameter_values; // 4-D vector of parameter values
         for (unsigned i = 0; i < Block_gNa.size(); i++) //Block_gNa.size()
@@ -78,18 +64,15 @@ public:
             parameter_values.push_back(blocks);
         }
 
-        // remove those points with No AP
-        /*                for(unsigned i=0;i<Block_gNa.size();i++)
-                {
-                    if (fabs(CHASTEapd[i]) < 1e-12 || fabs(CHASTEapd[i] - 1000)<1e-12)
-                    {
-                        CHASTEapd.erase(CHASTEapd.begin()+i);
-                        parameter_values.erase(parameter_values.begin()+i);
-                    }
+        std::string test_output_folder = "TestLookupTableArchiving_GP";
 
-                }
-*/
-        OutputFileHandler handler("TestLookupTableArchiving_GP", false);
+        if (CommandLineArguments::Instance()->OptionExists("--use-folder"))
+        {
+            test_output_folder = CommandLineArguments::Instance()->GetStringCorrespondingToOption("--use-folder");
+        }
+
+        OutputFileHandler handler(test_output_folder, false);
+
         // Load the number of simulations that were performed.
         std::string archive_filename_num_evals = handler.GetOutputDirectoryFullPath() + "NumbersOfEvaluations.arch";
         std::ifstream ifs_num_evals(archive_filename_num_evals.c_str(), std::ios::binary);
@@ -211,7 +194,7 @@ public:
             std::cout << "The error for interpolate Vs test data in the AP-AP box is:\t" << error << " ms" << std::endl;
 
             // Write all the results to file
-            mpTestWriter->PutVariable(time_var_id, i + 1);
+            mpTestWriter->PutVariable(time_var_id, num_evaluations[i]);
             mpTestWriter->PutVariable(interperr_var_id, error);
             mpTestWriter->PutVariable(conf_box_one, c1);
             mpTestWriter->PutVariable(conf_box_two, c2);
