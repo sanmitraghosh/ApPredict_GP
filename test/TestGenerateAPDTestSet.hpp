@@ -56,7 +56,7 @@ public:
 
         // Get IVPs
         SteadyStateRunner steady_runner(p_model);
-        steady_runner.SetMaxNumPaces(Init_Pace);
+        steady_runner.SetMaxNumPaces(max_num_paces);
         steady_runner.RunToSteadyState();
         OdeSolution solution = p_model->Compute(start_time, end_time, sampling_timestep);
         std::vector<double> StateVars = p_model->GetStdVecStateVariables();
