@@ -23,11 +23,13 @@ public:
         SuppressOutput = true;
         expected_fail_result = !PetscTools::AmMaster();
 
-        std::string base_file = "./projects/ApPredict_GP/test/data/dummy.dat";
-        std::string noised_file = "./projects/ApPredict_GP/test/data/dummyplus0.1.dat";
+        std::string chaste_file = "./projects/ApPredict_GP/test/data/chastedata.dat";
+        std::string matlab_file = "./projects/ApPredict_GP/test/data/matlabdata.dat";
 
-        NumericFileComparison different_data(base_file, noised_file, CalledCollectively, SuppressOutput);
-        TS_ASSERT(different_data.CompareFiles(2e-3, 0, 2e-3, false));
+
+        NumericFileComparison uptotwodecimal_data(chaste_file, matlab_file, CalledCollectively, SuppressOutput);
+
+        TS_ASSERT(uptotwodecimal.CompareFiles(2e-3, 0, 2e-3, false));
 
     }
 };
