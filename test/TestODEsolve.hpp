@@ -139,22 +139,7 @@ public:
         std::cout<< "APD value is:--->"<<apd<<std::endl;
 
 
-        CalledCollectively = true;
-        SuppressOutput = true;
-        expected_fail_result = !PetscTools::AmMaster();
 
-        std::string chaste_file = "./projects/ApPredict_GP/test/data/chastedata.dat";
-        std::string matlab_file = "./projects/ApPredict_GP/test/data/matlabdata.dat";
-
-
-        NumericFileComparison different_data(chaste_file, matlab_file, CalledCollectively, SuppressOutput);
-        TS_ASSERT(different_data.CompareFiles(2e-2, 0, 2e-2, false));
-        /*
-        NumericFileComparison different_data(base_file, noised_file, CalledCollectively, SuppressOutput);
-        TS_ASSERT(different_data.CompareFiles(1e-4));
-
-        TS_ASSERT_EQUALS(different_data.CompareFiles(1e-9, 0, 1e-9, false), expected_fail_result);
-        */
 #else
         std::cout << "Cvode is not enabled.\n";
 #endif
