@@ -1,3 +1,5 @@
+apps/src/ApdCalculatorApp
+apps/src/ApdCalculatorApp.o
 build/*
 build/*/*
 
