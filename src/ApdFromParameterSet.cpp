@@ -27,6 +27,9 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+// C++ headers
+#include <iomanip> // for std::setprecision
+
 // From this project
 #include "ApdFromParameterSet.hpp"
 
@@ -37,6 +40,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // From Core Chaste
 #include "Exception.hpp"
+#include "FileFinder.hpp"
+#include "OutputFileHandler.hpp"
 
 ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductanceScalings, double& rApd)
         : mVoltageThreshold(DBL_MAX),
@@ -63,7 +68,11 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
     }
 
     // Now look to see whether we have already worked out steady state and voltage threshold
-    //if ()
+    FileFinder archive_folder("ApdCalculatorApp", RelativeTo::ChasteTestOutput);
+    OutputFileHandler handler(archive_folder, false); // Open but don't wipe
+
+    FileFinder archive_of_steady_state_data("ApdCalculatorApp/steady_state_data_for_ApdCalculatorApp.dat", RelativeTo::ChasteTestOutput);
+    if (!archive_of_steady_state_data.IsFile())
     {
         SteadyStateRunner steady_runner(p_model);
         steady_runner.SuppressOutput();
@@ -76,10 +85,80 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
         // can see the effect of simply a stimulus current, and then set the threshold
         // for APs accordingly.
         mVoltageThreshold = LookupTableGenerator<4>::DetectVoltageThresholdForActionPotential(p_model);
+
+        // Write the state variables,
+        out_stream p_file = handler.OpenOutputFile("steady_state_data_for_ApdCalculatorApp.dat");
+        *p_file << mSteadyStateVariables.size() << std::endl;
+        *p_file << std::setprecision(16); // Make it high precision (might as well).
+        for (unsigned i = 0; i < mSteadyStateVariables.size(); i++)
+        {
+            *p_file << mSteadyStateVariables[i] << std::endl;
+        }
+        *p_file << mVoltageThreshold << std::endl;
+        p_file->close();
     }
-    //    else
-    //    {
-    //    }
+    else // Read in the stored steady state and voltage threshold
+    {
+        mSteadyStateVariables.clear();
+        mVoltageThreshold = DBL_MAX;
+
+        std::ifstream indata; // indata is like cin
+        indata.open(archive_of_steady_state_data.GetAbsolutePath().c_str()); // opens the file
+        if (!indata.good())
+        { // file couldn't be opened
+            EXCEPTION("Couldn't open data file: " << archive_of_steady_state_data.GetAbsolutePath());
+        }
+
+        unsigned num_lines_read = 0u;
+        unsigned num_state_vars_in_file = 0u;
+
+        while (indata.good())
+        {
+            std::string this_line;
+            getline(indata, this_line);
+            num_lines_read++;
+
+            if (this_line == "" || this_line == "\r")
+            {
+                if (indata.eof())
+                { // If the blank line is the last line carry on OK.
+                    break;
+                }
+            }
+
+            std::stringstream line(this_line);
+
+            if (num_lines_read == 1)
+            {
+                // First line should be number of state vars. Check this tallies correctly!
+                line >> num_state_vars_in_file;
+                EXCEPT_IF_NOT(num_state_vars_in_file == p_model->GetNumberOfStateVariables());
+                continue;
+            }
+            else
+            {
+                // Load a standard data line with a double
+                double temp;
+                line >> temp;
+
+                if (num_lines_read <= num_state_vars_in_file + 1)
+                {
+                    mSteadyStateVariables.push_back(temp);
+                }
+                else
+                {
+                    mVoltageThreshold = temp;
+                }
+            }
+        }
+
+        if (!indata.eof())
+        {
+            EXCEPTION("A file reading error occurred");
+        }
+
+        EXCEPT_IF_NOT(mSteadyStateVariables.size() == p_model->GetNumberOfStateVariables());
+    }
 
     // Do parameter scalings
     for (unsigned i = 0; i < rConductanceScalings.size(); i++)

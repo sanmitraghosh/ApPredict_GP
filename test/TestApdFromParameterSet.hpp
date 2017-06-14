@@ -3,6 +3,8 @@
 
 #include <cxxtest/TestSuite.h>
 
+#include "OutputFileHandler.hpp"
+
 #include "ApdFromParameterSet.hpp"
 
 class TestApdFromParameterSet : public CxxTest::TestSuite
@@ -11,6 +13,8 @@ public:
     // This test should give control APD90
     void TestControlApd() throw(Exception)
     {
+        OutputFileHandler handler("ApdCalculatorApp"); // Open and clean folder.
+
 #ifdef CHASTE_CVODE
         std::vector<double> scalings;
         scalings.push_back(1.0); // gNa
@@ -22,6 +26,21 @@ public:
         ApdFromParameterSet(scalings, apd);
 
         TS_ASSERT_DELTA(apd, 268.9157, 1e-4);
+    }
+
+    // This time we should load up saved state variables and voltage threshold
+    void TestControlApdAgain() throw(Exception)
+    {
+        std::vector<double> scalings;
+        scalings.push_back(1.0); // gNa
+        scalings.push_back(1.0); // gKr
+        scalings.push_back(1.0); // gKs
+        scalings.push_back(1.0); // gCaL
+
+        double apd;
+        ApdFromParameterSet(scalings, apd);
+
+        TS_ASSERT_DELTA(apd, 268.9157, 2e-3); // It moves a bit as it runs steady state again...
     }
 
     // This test should give prolonged 50% IKr block
