@@ -27,20 +27,97 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+// From this project
 #include "ApdFromParameterSet.hpp"
+
+// From ApPredict project
+#include "LookupTableGenerator.hpp"
+#include "SetupModel.hpp"
+#include "SingleActionPotentialPrediction.hpp"
+
+// From Core Chaste
 #include "Exception.hpp"
 
-ApdFromParameterSet::ApdFromParameterSet(const std::string& rMessage)
-    : mMessage(rMessage)
+ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductanceScalings, double& rApd)
+        : mVoltageThreshold(DBL_MAX),
+          mMaxNumPaces(100)
 {
-}
+    // Parameters of interest
+    std::vector<std::string> parameter_names;
+    parameter_names.push_back("membrane_fast_sodium_current_conductance");
+    parameter_names.push_back("membrane_rapid_delayed_rectifier_potassium_current_conductance");
+    parameter_names.push_back("membrane_slow_delayed_rectifier_potassium_current_conductance");
+    parameter_names.push_back("membrane_L_type_calcium_current_conductance");
 
-std::string ApdFromParameterSet::GetMessage()
-{
-    return mMessage;
-}
+    EXCEPT_IF_NOT(parameter_names.size() == rConductanceScalings.size());
 
-void ApdFromParameterSet::Complain(const std::string& rComplaint)
-{
-    EXCEPTION(rComplaint);
+    // Use helper method from ApPredict to set up the model.
+    SetupModel setup(1.0, 6u); // O'Hara at 1 Hz
+    boost::shared_ptr<AbstractCvodeCell> p_model = setup.GetModel();
+
+    // Save original model parameters
+    std::vector<double> param;
+    for (unsigned i = 0; i < parameter_names.size(); i++)
+    {
+        param.push_back(p_model->GetParameter(parameter_names[i]));
+    }
+
+    // Now look to see whether we have already worked out steady state and voltage threshold
+    //if ()
+    {
+        SteadyStateRunner steady_runner(p_model);
+        steady_runner.SuppressOutput();
+        steady_runner.RunToSteadyState();
+
+        // Record these initial conditions (we'll always start from these).
+        mSteadyStateVariables = MakeStdVec(p_model->rGetStateVariables());
+
+        // We now do a special run of a model with sodium current set to zero, so we
+        // can see the effect of simply a stimulus current, and then set the threshold
+        // for APs accordingly.
+        mVoltageThreshold = LookupTableGenerator<4>::DetectVoltageThresholdForActionPotential(p_model);
+    }
+    //    else
+    //    {
+    //    }
+
+    // Do parameter scalings
+    for (unsigned i = 0; i < rConductanceScalings.size(); i++)
+    {
+        p_model->SetParameter(parameter_names[i], param[i] * rConductanceScalings[i]);
+    }
+
+    // Reset the state variables to the 'standard' steady state
+    p_model->SetStateVariables(mSteadyStateVariables);
+
+    SingleActionPotentialPrediction ap_runner(p_model);
+    ap_runner.SuppressOutput();
+    ap_runner.SetMaxNumPaces(mMaxNumPaces);
+    ap_runner.SetLackOfOneToOneCorrespondenceIsError();
+    ap_runner.SetVoltageThresholdForRecordingAsActionPotential(mVoltageThreshold);
+    ap_runner.RunSteadyPacingExperiment();
+
+    // Record the results
+    if (ap_runner.DidErrorOccur())
+    {
+        std::string error_message = ap_runner.GetErrorMessage();
+        // We could use different numerical codes for different errors here if we wanted to.
+        if (error_message == "NoActionPotential_2" || error_message == "NoActionPotential_3")
+        {
+            // For an APD calculation failure on repolarisation put in the stimulus
+            // period.
+            double stim_period = boost::static_pointer_cast<RegularStimulus>(p_model->GetStimulusFunction())->GetPeriod();
+            rApd = stim_period;
+        }
+        else
+        {
+            // For everything else (failure to depolarize "NoActionPotential_1")
+            // just put in zero for now.
+            rApd = 0.0;
+        }
+    }
+    else
+    {
+        rApd = ap_runner.GetApd90();
+    }
 }

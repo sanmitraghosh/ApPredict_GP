@@ -43,40 +43,52 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <string>
 
-#include "ExecutableSupport.hpp"
+#include "CommandLineArguments.hpp"
 #include "Exception.hpp"
-#include "PetscTools.hpp"
+#include "ExecutableSupport.hpp"
 #include "PetscException.hpp"
+#include "PetscTools.hpp"
 
 #include "ApdFromParameterSet.hpp"
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-    // This sets up PETSc and prints out copyright information, etc.
-    ExecutableSupport::StandardStartup(&argc, &argv);
-
+    // This sets up PETSc
+    ExecutableSupport::InitializePetsc(&argc, &argv);
     int exit_code = ExecutableSupport::EXIT_OK;
 
     // You should put all the main code within a try-catch, to ensure that
     // you clean up PETSc before quitting.
     try
     {
-        if (argc<2)
+        if (argc < 2)
         {
-            ExecutableSupport::PrintError("Usage: ExampleApp arguments ...", true);
+            ExecutableSupport::PrintError("Usage: ApdCalculatorApp arguments --gNa <x> --gKr <y> --GKs <z> --gCaL <w>", true);
             exit_code = ExecutableSupport::EXIT_BAD_ARGUMENTS;
         }
         else
         {
-            for (int i=1; i<argc; i++)
+            // Get command line arguments
+            std::vector<std::string> argument_names;
+            argument_names.push_back("--gNa");
+            argument_names.push_back("--gKr");
+            argument_names.push_back("--gKs");
+            argument_names.push_back("--gCaL");
+
+            std::vector<double> scalings;
+            for (unsigned i = 0; i < argument_names.size(); i++)
             {
-                if (PetscTools::AmMaster())
+                if (!CommandLineArguments::Instance()->OptionExists(argument_names[i]))
                 {
-                    std::string arg_i(argv[i]);
-                    ApdFromParameterSet apd_calculator(arg_i);
-                    std::cout << "Argument " << i << " is " << apd_calculator.GetMessage() << std::endl << std::flush;
+                    EXCEPTION("Please supply a command line argument '" << argument_names[i] << "'.");
                 }
+                double scaling = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption(argument_names[i]);
+                scalings.push_back(scaling);
             }
+
+            double apd;
+            ApdFromParameterSet apd_calculator(scalings, apd);
+            std::cout << apd << std::endl;
         }
     }
     catch (const Exception& e)
@@ -84,9 +96,6 @@ int main(int argc, char *argv[])
         ExecutableSupport::PrintError(e.GetMessage());
         exit_code = ExecutableSupport::EXIT_ERROR;
     }
-
-    // Optional - write the machine info to file.
-    ExecutableSupport::WriteMachineInfoFile("machine_info");
 
     // End by finalizing PETSc, and returning a suitable exit code.
     // 0 means 'no error'

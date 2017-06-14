@@ -27,22 +27,35 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef HELLO_HPP_
+#ifndef APDFROMPARAMETERSET_HPP_
 #define APDFROMPARAMETERSET_HPP_
 
-#include <string>
+#include <vector>
 
+/**
+ * Class to work out APD that will go in Lookup Table / Emulator for a given location
+ * in parameter space.
+ */
 class ApdFromParameterSet
 {
 private:
-    std::string mMessage;
+    /** Voltage threshold to say NoActionPotential1 - worked out if file giving result isn't present, loaded if it is. */
+    double mVoltageThreshold;
+
+    /** Maximum number of paces to run for this experiment */
+    unsigned mMaxNumPaces;
+
+    /** Voltage threshold to say NoActionPotential1 - worked out if file giving result isn't present, loaded if it is. */
+    std::vector<double> mSteadyStateVariables;
 
 public:
-    ApdFromParameterSet(const std::string& rMessage);
-
-    std::string GetMessage();
-
-    void Complain(const std::string& rComplaint);
+    /**
+     * Constructor and method that does all the work.
+     *
+     * @param rConductanceScalings  scalings to apply, relative to original CellML parameters
+     * @param rApd  reference to an empty double to populate/overwrite.
+     */
+    ApdFromParameterSet(const std::vector<double>& rConductanceScalings, double& rApd);
 };
 
 #endif /*APDFROMPARAMETERSET_HPP_*/
