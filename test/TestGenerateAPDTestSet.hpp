@@ -46,7 +46,7 @@ public:
         int apd_var_id = mpTestWriter->DefineVariable("APD", "milliseconds");
         mpTestWriter->EndDefineMode();
 
-        double apd;
+        
         for (unsigned i = 0; i < Block_gNa.size(); i++) // Block_gNa.size()
         {
             std::vector<double> scalings;
@@ -62,7 +62,7 @@ public:
             mpTestWriter->PutVariable(gNa_var_id, Block_gNa[i]);
             mpTestWriter->PutVariable(gKr_var_id, Block_gKr[i]);
             mpTestWriter->PutVariable(gKs_var_id, Block_gKs[i]);
-            mpTestWriter->PutVariable(gCaL_var_id, Block_gCal[i]);
+            mpTestWriter->PutVariable(gCaL_var_id, Block_gCaL[i]);
             mpTestWriter->PutVariable(apd_var_id, apd);
             mpTestWriter->AdvanceAlongUnlimitedDimension();
 
