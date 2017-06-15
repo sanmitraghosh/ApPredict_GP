@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
     {
         if (argc < 2)
         {
-            ExecutableSupport::PrintError("Usage: ApdCalculatorApp arguments --gNa <x> --gKr <y> --GKs <z> --gCaL <w>", true);
+            ExecutableSupport::PrintError("Usage: ApdCalculatorApp --gNa <x> --gKr <y> --gKs <z> --gCaL <w>", true);
             exit_code = ExecutableSupport::EXIT_BAD_ARGUMENTS;
         }
         else
