@@ -25,7 +25,11 @@ public:
     {
 #ifdef CHASTE_CVODE
 
-        mpTestWriter = new ColumnDataWriter("TestApdProfile", "APDs", false);
+        std::string output_folder = "TestApdProfile";
+
+        OutputFileHandler handler(output_folder);
+
+        mpTestWriter = new ColumnDataWriter(output_folder, "APDs", false);
         int time_var_id = mpTestWriter->DefineUnlimitedDimension("TestPointIndex",
                                                                  "dimensionless");
         int gNa_var_id = mpTestWriter->DefineVariable("g_Na", "dimensionless");
@@ -36,14 +40,16 @@ public:
         double block_gKr = 0.5; // Take a 1D slice of parameter space.
 
         unsigned resolution = 100u; // subdivisions of gNa (one more evaluation for each end)
-        std::vector<double> block_gNa(resolution);
-        for (unsigned i = 0; i <= resolution; i++)
+        std::vector<double> block_gNa(resolution + 1u);
+        double max_g_Na = 0.3;
+
+        for (unsigned i = 0; i < resolution + 1u; i++)
         {
-            block_gNa[i] = double(i) / double(resolution);
+            block_gNa[i] = max_g_Na * double(i) / double(resolution);
         }
 
         // Make a FileFinder to collect the APDs and see what is going on.
-        FileFinder* p_file_finder = new FileFinder("TestApdProfile", RelativeTo::ChasteTestOutput);
+        FileFinder* p_file_finder = new FileFinder(output_folder, RelativeTo::ChasteTestOutput);
 
         for (unsigned i = 0; i < block_gNa.size(); i++)
         {
