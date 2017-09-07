@@ -200,7 +200,7 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
             filename << rConductanceScalings[i] << "_";
         }
         OdeSolution solution = ap_runner.RunSteadyPacingExperiment();
-        solution.WriteToFile("Debugging_Apd_Calculations", filename.str(), "ms", 1, false);
+        solution.WriteToFile(pFileFinder->GetLeafName(), filename.str(), "ms", 10, false);
     }
     else
     {
@@ -212,6 +212,7 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
     {
         std::string error_message = ap_runner.GetErrorMessage();
         // We could use different numerical codes for different errors here if we wanted to.
+        // But these two errors are associated with repolarization failure
         if (error_message == "NoActionPotential_2" || error_message == "NoActionPotential_3")
         {
             // For an APD calculation failure on repolarisation put in the stimulus
@@ -222,6 +223,7 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
         else
         {
             // For everything else (failure to depolarize "NoActionPotential_1")
+            // alternans, or alternans with only one detected AP
             // just put in zero for now.
             rApd = 0.0;
         }
