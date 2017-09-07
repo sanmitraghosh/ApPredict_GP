@@ -52,9 +52,18 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
     // Parameters of interest
     std::vector<std::string> parameter_names;
     parameter_names.push_back("membrane_fast_sodium_current_conductance");
-    parameter_names.push_back("membrane_rapid_delayed_rectifier_potassium_current_conductance");
-    parameter_names.push_back("membrane_slow_delayed_rectifier_potassium_current_conductance");
-    parameter_names.push_back("membrane_L_type_calcium_current_conductance");
+    if (rConductanceScalings.size() > 1u)
+    {
+        parameter_names.push_back("membrane_rapid_delayed_rectifier_potassium_current_conductance");
+    }
+    if (rConductanceScalings.size() > 2u)
+    {
+        parameter_names.push_back("membrane_slow_delayed_rectifier_potassium_current_conductance");
+    }
+    if (rConductanceScalings.size() > 3u)
+    {
+        parameter_names.push_back("membrane_L_type_calcium_current_conductance");
+    }
 
     EXCEPT_IF_NOT(parameter_names.size() == rConductanceScalings.size());
 
@@ -191,7 +200,7 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
             filename << rConductanceScalings[i] << "_";
         }
         OdeSolution solution = ap_runner.RunSteadyPacingExperiment();
-        solution.WriteToFile("Debugging_Apd_Calculations", filename.str() + ".txt", "ms", 1, false);
+        solution.WriteToFile("Debugging_Apd_Calculations", filename.str(), "ms", 1, false);
     }
     else
     {

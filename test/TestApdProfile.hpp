@@ -5,8 +5,8 @@
 #include <cxxtest/TestSuite.h>
 
 #include "ApdFromParameterSet.hpp"
-#include "ColumnDataReader.hpp"
 #include "ColumnDataWriter.hpp"
+#include "FileFinder.hpp"
 
 #include "FakePetscSetup.hpp"
 
@@ -42,13 +42,16 @@ public:
             block_gNa[i] = double(i) / double(resolution);
         }
 
+        // Make a FileFinder to collect the APDs and see what is going on.
+        FileFinder* p_file_finder = new FileFinder("TestApdProfile", RelativeTo::ChasteTestOutput);
+
         for (unsigned i = 0; i < block_gNa.size(); i++)
         {
             std::vector<double> scalings;
             scalings.push_back(block_gNa[i]);
             scalings.push_back(block_gKr);
             double apd;
-            ApdFromParameterSet(scalings, apd);
+            ApdFromParameterSet(scalings, apd, p_file_finder);
 
             std::cout << i << "\t APD = " << apd << "ms" << std::endl;
             mpTestWriter->PutVariable(time_var_id, i + 1);
@@ -58,7 +61,7 @@ public:
             mpTestWriter->AdvanceAlongUnlimitedDimension();
         }
         delete mpTestWriter;
-
+        delete p_file_finder;
 #else
         std::cout << "Cvode is not enabled.\n";
 #endif
