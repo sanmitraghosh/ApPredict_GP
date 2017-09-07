@@ -31,6 +31,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define APDFROMPARAMETERSET_HPP_
 
 #include <vector>
+#include "FileFinder.hpp"
 
 /**
  * Class to work out APD that will go in Lookup Table / Emulator for a given location
@@ -54,8 +55,11 @@ public:
      *
      * @param rConductanceScalings  scalings to apply, relative to original CellML parameters
      * @param rApd  reference to an empty double to populate/overwrite.
+     * @param pFileFinder  if a file finder is provided, we write the APs out to this folder.
      */
-    ApdFromParameterSet(const std::vector<double>& rConductanceScalings, double& rApd);
+    ApdFromParameterSet(const std::vector<double>& rConductanceScalings,
+                        double& rApd,
+                        FileFinder* pFileFinder = nullptr);
 };
 
 #endif /*APDFROMPARAMETERSET_HPP_*/

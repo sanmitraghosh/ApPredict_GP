@@ -43,7 +43,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileFinder.hpp"
 #include "OutputFileHandler.hpp"
 
-ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductanceScalings, double& rApd)
+ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductanceScalings,
+                                         double& rApd,
+                                         FileFinder* pFileFinder)
         : mVoltageThreshold(DBL_MAX),
           mMaxNumPaces(100)
 {
@@ -174,7 +176,27 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
     ap_runner.SetMaxNumPaces(mMaxNumPaces);
     ap_runner.SetLackOfOneToOneCorrespondenceIsError();
     ap_runner.SetVoltageThresholdForRecordingAsActionPotential(mVoltageThreshold);
-    ap_runner.RunSteadyPacingExperiment();
+
+    if (pFileFinder)
+    {
+        if (!pFileFinder->IsDir())
+        {
+            EXCEPTION("The file finder must point to a directory in which to put action potential traces");
+        }
+
+        std::stringstream filename;
+        filename << p_model->GetSystemName() << "_";
+        for (unsigned i = 0; i < rConductanceScalings.size(); i++)
+        {
+            filename << rConductanceScalings[i] << "_";
+        }
+        OdeSolution solution = ap_runner.RunSteadyPacingExperiment();
+        solution.WriteToFile("Debugging_Apd_Calculations", filename.str() + ".txt", "ms", 1, false);
+    }
+    else
+    {
+        ap_runner.RunSteadyPacingExperiment();
+    }
 
     // Record the results
     if (ap_runner.DidErrorOccur())
