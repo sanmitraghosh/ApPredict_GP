@@ -184,6 +184,7 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
     ap_runner.SuppressOutput();
     ap_runner.SetMaxNumPaces(mMaxNumPaces);
     ap_runner.SetLackOfOneToOneCorrespondenceIsError();
+    ap_runner.SetAlternansIsError();
     ap_runner.SetVoltageThresholdForRecordingAsActionPotential(mVoltageThreshold);
 
     if (pFileFinder)

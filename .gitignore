@@ -6,3 +6,5 @@ build/*/*
 \.pydevproject
 
 apps/src/example_matlab_call\.m~
+
+test/plot_output_of_APD_profile\.m~

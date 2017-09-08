@@ -39,9 +39,9 @@ public:
 
         double block_gKr = 0.5; // Take a 1D slice of parameter space.
 
-        unsigned resolution = 100u; // subdivisions of gNa (one more evaluation for each end)
+        unsigned resolution = 200u; // subdivisions of gNa (one more evaluation for each end)
         std::vector<double> block_gNa(resolution + 1u);
-        double max_g_Na = 0.3;
+        double max_g_Na = 0.2;
 
         for (unsigned i = 0; i < resolution + 1u; i++)
         {
@@ -59,7 +59,7 @@ public:
             double apd;
             ApdFromParameterSet(scalings, apd, p_file_finder);
 
-            std::cout << i << "\t APD = " << apd << "ms" << std::endl;
+            std::cout << i << "\tGNa = " << block_gNa[i] << "\tAPD = " << apd << "ms" << std::endl;
             mpTestWriter->PutVariable(time_var_id, i + 1);
             mpTestWriter->PutVariable(gNa_var_id, block_gNa[i]);
             mpTestWriter->PutVariable(gKr_var_id, block_gKr);
