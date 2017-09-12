@@ -44,9 +44,9 @@ public:
         int gKs_var_id = mpTestWriter->DefineVariable("g_Ks", "dimensionless");
         int gCaL_var_id = mpTestWriter->DefineVariable("g_CaL", "dimensionless");
         int apd_var_id = mpTestWriter->DefineVariable("APD", "milliseconds");
+        int err_var_id = mpTestWriter->DefineVariable("Error_Code", "dimensionless");
         mpTestWriter->EndDefineMode();
 
-        
         for (unsigned i = 0; i < Block_gNa.size(); i++) // Block_gNa.size()
         {
             std::vector<double> scalings;
@@ -55,7 +55,8 @@ public:
             scalings.push_back(Block_gKs[i]);
             scalings.push_back(Block_gCaL[i]);
             double apd;
-            ApdFromParameterSet(scalings, apd);
+            unsigned error_code;
+            ApdFromParameterSet(scalings, apd, error_code);
 
             std::cout << "APD value is:--->" << apd << std::endl;
             mpTestWriter->PutVariable(time_var_id, i + 1);
@@ -64,6 +65,7 @@ public:
             mpTestWriter->PutVariable(gKs_var_id, Block_gKs[i]);
             mpTestWriter->PutVariable(gCaL_var_id, Block_gCaL[i]);
             mpTestWriter->PutVariable(apd_var_id, apd);
+            mpTestWriter->PutVariable(err_var_id, apd);
             mpTestWriter->AdvanceAlongUnlimitedDimension();
 
             // double delta= std::abs(apd-MATLABapd[i]);

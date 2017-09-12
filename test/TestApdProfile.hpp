@@ -35,6 +35,7 @@ public:
         int gNa_var_id = mpTestWriter->DefineVariable("g_Na", "dimensionless");
         int gKr_var_id = mpTestWriter->DefineVariable("g_Kr", "dimensionless");
         int apd_var_id = mpTestWriter->DefineVariable("APD", "milliseconds");
+        int err_var_id = mpTestWriter->DefineVariable("ErrorCode", "dimensionless");
         mpTestWriter->EndDefineMode();
 
         double block_gKr = 0.5; // Take a 1D slice of parameter space.
@@ -57,13 +58,15 @@ public:
             scalings.push_back(block_gNa[i]);
             scalings.push_back(block_gKr);
             double apd;
-            ApdFromParameterSet(scalings, apd, p_file_finder);
+            unsigned error_code;
+            ApdFromParameterSet(scalings, apd, error_code, p_file_finder);
 
-            std::cout << i << "\tGNa = " << block_gNa[i] << "\tAPD = " << apd << "ms" << std::endl;
+            std::cout << i << "\tGNa = " << block_gNa[i] << "\tAPD = " << apd << "ms\tError Code = " << error_code << std::endl;
             mpTestWriter->PutVariable(time_var_id, i + 1);
             mpTestWriter->PutVariable(gNa_var_id, block_gNa[i]);
             mpTestWriter->PutVariable(gKr_var_id, block_gKr);
             mpTestWriter->PutVariable(apd_var_id, apd);
+            mpTestWriter->PutVariable(err_var_id, error_code);
             mpTestWriter->AdvanceAlongUnlimitedDimension();
         }
         delete mpTestWriter;

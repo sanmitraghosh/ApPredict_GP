@@ -23,9 +23,11 @@ public:
         scalings.push_back(1.0); // gCaL
 
         double apd;
-        ApdFromParameterSet(scalings, apd);
+        unsigned error_code;
+        ApdFromParameterSet(scalings, apd, error_code);
 
-        TS_ASSERT_DELTA(apd, 268.9157, 1e-4);
+        TS_ASSERT_DELTA(apd, 268.9191, 1e-3);
+        TS_ASSERT_EQUALS(error_code, 0u);
     }
 
     // This time we should load up saved state variables and voltage threshold
@@ -38,9 +40,11 @@ public:
         scalings.push_back(1.0); // gCaL
 
         double apd;
-        ApdFromParameterSet(scalings, apd);
+        unsigned error_code;
+        ApdFromParameterSet(scalings, apd, error_code);
 
-        TS_ASSERT_DELTA(apd, 268.9157, 2e-3); // It moves a bit as it runs steady state again...
+        TS_ASSERT_DELTA(apd, 268.9274, 2e-3); // It moves a bit as it runs steady state again...
+        TS_ASSERT_EQUALS(error_code, 0u);
     }
 
     // This test should give prolonged 50% IKr block
@@ -54,9 +58,11 @@ public:
         scalings.push_back(1.0); // gCaL
 
         double apd;
-        ApdFromParameterSet(scalings, apd);
+        unsigned error_code;
+        ApdFromParameterSet(scalings, apd, error_code);
 
-        TS_ASSERT_DELTA(apd, 384.9268, 1e-4);
+        TS_ASSERT_DELTA(apd, 384.9271, 1e-3);
+        TS_ASSERT_EQUALS(error_code, 0u);
     }
 
     // This test should give No Depolarization error code.
@@ -69,9 +75,11 @@ public:
         scalings.push_back(1.0); // gCaL
 
         double apd;
-        ApdFromParameterSet(scalings, apd);
+        unsigned error_code;
+        ApdFromParameterSet(scalings, apd, error_code);
 
         TS_ASSERT_DELTA(apd, 0.0, 1e-6);
+        TS_ASSERT_EQUALS(error_code, 1u);
     }
 
     // This test should give No Repolarization error code.
@@ -84,9 +92,11 @@ public:
         scalings.push_back(1.0); // gCaL
 
         double apd;
-        ApdFromParameterSet(scalings, apd);
+        unsigned error_code;
+        ApdFromParameterSet(scalings, apd, error_code);
 
         TS_ASSERT_DELTA(apd, 1000.0, 1e-6);
+        TS_ASSERT_EQUALS(error_code, 2u);
 #else
         std::cout << "Cvode is not enabled, it needs to be to run this project.\n";
 #endif

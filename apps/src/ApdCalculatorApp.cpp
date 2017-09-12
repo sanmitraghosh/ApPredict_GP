@@ -87,7 +87,8 @@ int main(int argc, char* argv[])
             }
 
             double apd;
-            ApdFromParameterSet apd_calculator(scalings, apd);
+            unsigned error_code;
+            ApdFromParameterSet apd_calculator(scalings, apd, error_code);
             std::cout << apd << std::endl;
         }
     }

@@ -55,10 +55,12 @@ public:
      *
      * @param rConductanceScalings  scalings to apply, relative to original CellML parameters
      * @param rApd  reference to an empty double to populate/overwrite.
+     * @param rErrorCode a reference to an empty unsigned to populate or overwrite.
      * @param pFileFinder  if a file finder is provided, we write the APs out to this folder.
      */
     ApdFromParameterSet(const std::vector<double>& rConductanceScalings,
                         double& rApd,
+                        unsigned& rErrorCode,
                         FileFinder* pFileFinder = nullptr);
 };
 

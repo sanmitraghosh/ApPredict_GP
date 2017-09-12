@@ -45,6 +45,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductanceScalings,
                                          double& rApd,
+                                         unsigned& rErrorCode,
                                          FileFinder* pFileFinder)
         : mVoltageThreshold(DBL_MAX),
           mMaxNumPaces(100)
@@ -211,6 +212,7 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
     // Record the results
     if (ap_runner.DidErrorOccur())
     {
+        rErrorCode = ap_runner.GetErrorCode();
         std::string error_message = ap_runner.GetErrorMessage();
         // We could use different numerical codes for different errors here if we wanted to.
         // But these two errors are associated with repolarization failure
@@ -231,6 +233,7 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
     }
     else
     {
+        rErrorCode = 0u;
         rApd = ap_runner.GetApd90();
     }
 }

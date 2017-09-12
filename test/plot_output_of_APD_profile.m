@@ -3,6 +3,8 @@ clear all
 
 test_output_dir = '/export/testoutput/TestApdProfile/';
 
+summary_d = importdata([test_output_dir 'APDs.dat']);
+
 resolution = 200;
 max_GNa = 0.2;
 gKr_value = 0.5;
@@ -20,12 +22,15 @@ for i=1:resolution+1
     hold all
     
     % plot some troublesome ones
-    if i==93 || i==95 || i==101 || i==114 || i==136
+    if i>=91 && i<=98
     figure
-    plot(d.data(:,1), d.data(:,2), '-')
+    plot(d.data(:,1), d.data(:,2), 'b-')
+    hold on
+    plot(d.data(1001:2001,1), d.data(1:1001,2), 'r-')
+    plot(d.data(1:1001,1), d.data(1001:2001,2), 'r-')
     xlabel('Time (ms)')
     ylabel('Voltage (mV)')
-    title(['Trace ' num2str(i) ' with gNa = ' num2str(g_Na_factor)])
+    title(['Trace ' num2str(i) ' with gNa = ' num2str(g_Na_factor) ' Error code = ' num2str(summary_d.data(i,5))])
     end
 end
 
@@ -34,11 +39,14 @@ xlabel('Time (ms)')
 ylabel('gNa scaling factor')
 zlabel('Voltage (mV)')
 
-d = importdata([test_output_dir 'APDs.dat'])
+
 
 figure
-plot(d.data(:,2),d.data(:,end),'.-')
+plot(summary_d.data(:,2),summary_d.data(:,4),'.-')
 xlabel('gNa scaling factor')
 ylabel('APD (ms)')
+hold on
+plot(summary_d.data(:,2),100*summary_d.data(:,5),'x')
+
 
 
