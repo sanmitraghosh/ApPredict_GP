@@ -27,6 +27,7 @@ public:
 
         std::string output_folder = "TestApdProfile";
 
+        OutputFileHandler handler_wipe("ApdCalculatorApp"); // Open and clean folder.
         OutputFileHandler handler(output_folder);
 
         mpTestWriter = new ColumnDataWriter(output_folder, "APDs", false);
@@ -38,33 +39,33 @@ public:
         int err_var_id = mpTestWriter->DefineVariable("ErrorCode", "dimensionless");
         mpTestWriter->EndDefineMode();
 
-        double block_gKr = 0.5; // Take a 1D slice of parameter space.
+        double block_gNa = 0.5; // Take a 1D slice of parameter space.
 
-        unsigned resolution = 200u; // subdivisions of gNa (one more evaluation for each end)
-        std::vector<double> block_gNa(resolution + 1u);
-        double max_g_Na = 0.2;
+        unsigned resolution = 200u; // subdivisions of gKr (one more evaluation for each end)
+        std::vector<double> block_gKr(resolution + 1u);
+        double max_g_Kr = 0.06;
 
         for (unsigned i = 0; i < resolution + 1u; i++)
         {
-            block_gNa[i] = max_g_Na * double(i) / double(resolution);
+            block_gKr[i] = max_g_Kr * double(i) / double(resolution);
         }
 
         // Make a FileFinder to collect the APDs and see what is going on.
         FileFinder* p_file_finder = new FileFinder(output_folder, RelativeTo::ChasteTestOutput);
 
-        for (unsigned i = 0; i < block_gNa.size(); i++)
+        for (unsigned i = 0; i < block_gKr.size(); i++)
         {
             std::vector<double> scalings;
-            scalings.push_back(block_gNa[i]);
-            scalings.push_back(block_gKr);
+            scalings.push_back(block_gNa);
+            scalings.push_back(block_gKr[i]);
             double apd;
             unsigned error_code;
             ApdFromParameterSet(scalings, apd, error_code, p_file_finder);
 
-            std::cout << i << "\tGNa = " << block_gNa[i] << "\tAPD = " << apd << "ms\tError Code = " << error_code << std::endl;
+            std::cout << i << "\tGKr = " << block_gKr[i] << "\tAPD = " << apd << "ms\tError Code = " << error_code << std::endl;
             mpTestWriter->PutVariable(time_var_id, i + 1);
-            mpTestWriter->PutVariable(gNa_var_id, block_gNa[i]);
-            mpTestWriter->PutVariable(gKr_var_id, block_gKr);
+            mpTestWriter->PutVariable(gNa_var_id, block_gNa);
+            mpTestWriter->PutVariable(gKr_var_id, block_gKr[i]);
             mpTestWriter->PutVariable(apd_var_id, apd);
             mpTestWriter->PutVariable(err_var_id, error_code);
             mpTestWriter->AdvanceAlongUnlimitedDimension();

@@ -40,7 +40,7 @@ public:
         int err_var_id = mpTestWriter->DefineVariable("ErrorCode", "dimensionless");
         mpTestWriter->EndDefineMode();
 
-        unsigned num_samples = 1000u;
+        unsigned num_samples = 10000u;
         std::vector<double> block_gKr(num_samples);
         std::vector<double> block_gNa(num_samples);
 
@@ -50,7 +50,7 @@ public:
             block_gNa[i] = RandomNumberGenerator::Instance()->ranf();
         }
 
-        // Make a FileFinder to collect the APDs and see what is going on.
+        // Make a FileFinder to collect the APDs and see what is going on - uncomment if we want APs output.
         FileFinder* p_file_finder = new FileFinder(output_folder, RelativeTo::ChasteTestOutput);
 
         for (unsigned i = 0; i < num_samples; i++)
