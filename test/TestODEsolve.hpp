@@ -11,9 +11,11 @@ class TestODEsolve : public CxxTest::TestSuite
 public:
     void TestOHaraSimulation() throw(Exception)
     {
+        OutputFileHandler handler_wipe("ApdCalculatorApp"); // Open and clean folder with some settings in it.
 #ifdef CHASTE_CVODE
 
-        ColumnDataReader reader("projects/ApPredict_GP/test/data", "matlabdata", false);
+        ColumnDataReader reader("projects/ApPredict_GP/test/data", "matlabdata",
+                                false);
         std::vector<double> Block_gNa = reader.GetValues("g_Na");
         std::vector<double> Block_gKr = reader.GetValues("g_Kr");
         std::vector<double> Block_gKs = reader.GetValues("g_Ks");

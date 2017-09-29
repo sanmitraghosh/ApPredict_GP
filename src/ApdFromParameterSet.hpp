@@ -43,6 +43,9 @@ private:
     /** Voltage threshold to say NoActionPotential1 - worked out if file giving result isn't present, loaded if it is. */
     double mVoltageThreshold;
 
+    /** APD90 at default parameters - used to get more sensible error messages */
+    double mDefaultApd90;
+
     /** Maximum number of paces to run for this experiment */
     unsigned mMaxNumPaces;
 

@@ -25,6 +25,7 @@ private:
 public:
     void TestOHaraSimulation() throw(Exception)
     {
+        OutputFileHandler handler_wipe("ApdCalculatorApp"); // Open and clean folder.
 #ifdef CHASTE_CVODE
 
         // This bit of code is to setup Read / Write to file

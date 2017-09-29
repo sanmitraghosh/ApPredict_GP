@@ -48,6 +48,7 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
                                          unsigned& rErrorCode,
                                          FileFinder* pFileFinder)
         : mVoltageThreshold(DBL_MAX),
+          mDefaultApd90(DBL_MAX),
           mMaxNumPaces(100)
 {
     // Parameters of interest
@@ -86,9 +87,10 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
     FileFinder archive_of_steady_state_data("ApdCalculatorApp/steady_state_data_for_ApdCalculatorApp.dat", RelativeTo::ChasteTestOutput);
     if (!archive_of_steady_state_data.IsFile())
     {
-        SteadyStateRunner steady_runner(p_model);
-        steady_runner.SuppressOutput();
-        steady_runner.RunToSteadyState();
+        SingleActionPotentialPrediction single_ap_evaluation(p_model);
+        single_ap_evaluation.SuppressOutput();
+        single_ap_evaluation.RunSteadyPacingExperiment();
+        mDefaultApd90 = single_ap_evaluation.GetApd90();
 
         // Record these initial conditions (we'll always start from these).
         mSteadyStateVariables = MakeStdVec(p_model->rGetStateVariables());
@@ -107,12 +109,14 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
             *p_file << mSteadyStateVariables[i] << std::endl;
         }
         *p_file << mVoltageThreshold << std::endl;
+        *p_file << mDefaultApd90 << std::endl;
         p_file->close();
     }
     else // Read in the stored steady state and voltage threshold
     {
         mSteadyStateVariables.clear();
         mVoltageThreshold = DBL_MAX;
+        mDefaultApd90 = DBL_MAX;
 
         std::ifstream indata; // indata is like cin
         indata.open(archive_of_steady_state_data.GetAbsolutePath().c_str()); // opens the file
@@ -157,9 +161,17 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
                 {
                     mSteadyStateVariables.push_back(temp);
                 }
-                else
+                else if (num_lines_read == num_state_vars_in_file + 2)
                 {
                     mVoltageThreshold = temp;
+                }
+                else if (num_lines_read == num_state_vars_in_file + 3)
+                {
+                    mDefaultApd90 = temp;
+                }
+                else
+                {
+                    EXCEPTION("File reading error occurred. Probably fixed if you delete the folder <testoutput>/ApdCalculatorApp.");
                 }
             }
         }
@@ -187,6 +199,7 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
     ap_runner.SetLackOfOneToOneCorrespondenceIsError();
     ap_runner.SetAlternansIsError();
     ap_runner.SetVoltageThresholdForRecordingAsActionPotential(mVoltageThreshold);
+    ap_runner.SetControlActionPotentialDuration90(mDefaultApd90);
 
     if (pFileFinder)
     {
@@ -214,9 +227,10 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
     {
         rErrorCode = ap_runner.GetErrorCode();
         std::string error_message = ap_runner.GetErrorMessage();
-        // We could use different numerical codes for different errors here if we wanted to.
-        // But these two errors are associated with repolarization failure
-        if (error_message == "NoActionPotential_2" || error_message == "NoActionPotential_3")
+        // We could use all the different numerical codes for different errors here if we wanted to.
+        // But we will lump them into depolarisation and repolarisation abnormalities
+        // These errors are associated with repolarization failure
+        if (error_message == "NoActionPotential_2" || error_message == "NoActionPotential_3" || error_message == "NoActionPotential_6")
         {
             // For an APD calculation failure on repolarisation put in the stimulus
             // period.
