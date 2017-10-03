@@ -7,7 +7,7 @@ d = importdata([test_output_dir 'APDs.dat']);
 
 figure(1)
 
-error_labels = unique(d.data(:,5));
+error_labels = sort(unique(d.data(:,5)));
 
 for err_code = 1:length(error_labels)
 
@@ -19,4 +19,11 @@ end
 xlabel('gNa scaling factor')
 ylabel('gKr scaling factor')
 zlabel('APD (ms)')
-legend([h{1:end}],{'APD','NoAP_1','NoAP_2','NoAP_3','NoAP_4','NoAP_5','NoAP_6','NoAP_7'})
+
+error_code_names{1} = 'APD';
+for i=2:length(error_labels)
+    error_code_names{i} = ['NoAP_' num2str(error_labels(i))];
+end
+
+
+legend([h{1:end}],error_code_names)
