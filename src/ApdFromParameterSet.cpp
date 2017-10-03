@@ -48,7 +48,8 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
                                          unsigned& rErrorCode,
                                          FileFinder* pFileFinder)
         : mVoltageThreshold(DBL_MAX),
-          mDefaultApd90(DBL_MAX),
+          mDefaultParametersApd90(DBL_MAX),
+          mDefaultParametersTimeOfPeakVoltage(-DBL_MAX),
           mMaxNumPaces(100)
 {
     // Parameters of interest
@@ -90,7 +91,8 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
         SingleActionPotentialPrediction single_ap_evaluation(p_model);
         single_ap_evaluation.SuppressOutput();
         single_ap_evaluation.RunSteadyPacingExperiment();
-        mDefaultApd90 = single_ap_evaluation.GetApd90();
+        mDefaultParametersApd90 = single_ap_evaluation.GetApd90();
+        mDefaultParametersTimeOfPeakVoltage = single_ap_evaluation.GetTimeOfPeakVoltage();
 
         // Record these initial conditions (we'll always start from these).
         mSteadyStateVariables = MakeStdVec(p_model->rGetStateVariables());
@@ -109,14 +111,16 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
             *p_file << mSteadyStateVariables[i] << std::endl;
         }
         *p_file << mVoltageThreshold << std::endl;
-        *p_file << mDefaultApd90 << std::endl;
+        *p_file << mDefaultParametersApd90 << std::endl;
+        *p_file << mDefaultParametersTimeOfPeakVoltage << std::endl;
         p_file->close();
     }
     else // Read in the stored steady state and voltage threshold
     {
         mSteadyStateVariables.clear();
         mVoltageThreshold = DBL_MAX;
-        mDefaultApd90 = DBL_MAX;
+        mDefaultParametersApd90 = DBL_MAX;
+        mDefaultParametersTimeOfPeakVoltage = -DBL_MAX;
 
         std::ifstream indata; // indata is like cin
         indata.open(archive_of_steady_state_data.GetAbsolutePath().c_str()); // opens the file
@@ -167,7 +171,11 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
                 }
                 else if (num_lines_read == num_state_vars_in_file + 3)
                 {
-                    mDefaultApd90 = temp;
+                    mDefaultParametersApd90 = temp;
+                }
+                else if (num_lines_read == num_state_vars_in_file + 4)
+                {
+                    mDefaultParametersTimeOfPeakVoltage = temp;
                 }
                 else
                 {
@@ -199,7 +207,8 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
     ap_runner.SetLackOfOneToOneCorrespondenceIsError();
     ap_runner.SetAlternansIsError();
     ap_runner.SetVoltageThresholdForRecordingAsActionPotential(mVoltageThreshold);
-    ap_runner.SetControlActionPotentialDuration90(mDefaultApd90);
+    ap_runner.SetControlActionPotentialDuration90(mDefaultParametersApd90);
+    ap_runner.SetControlTimeOfPeakVoltage(mDefaultParametersTimeOfPeakVoltage);
 
     if (pFileFinder)
     {
@@ -240,7 +249,7 @@ ApdFromParameterSet::ApdFromParameterSet(const std::vector<double>& rConductance
         else
         {
             // For everything else (failure to depolarize "NoActionPotential_1")
-            // alternans, or alternans with only one detected AP
+            // alternans, or alternans with only one detected AP, etc.
             // just put in zero for now.
             rApd = 0.0;
         }
