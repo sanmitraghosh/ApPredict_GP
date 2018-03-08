@@ -1,0 +1,5 @@
+Usage: ApdCalculatorApp arguments --gNa <x> --gKr <y> --GKs <z> --gCaL <w>
+Usage: ApdCalculatorApp --gNa <x> --gKr <y> --gKs <z> --gCaL <w>
+
+Chaste error: ./projects/ApPredict_GP/apps/src/ApdCalculatorApp.cpp:83: Please supply a command line argument '--gKs'.
+Usage: ApdCalculatorApp --gNa <x> --gKr <y> --gKs <z> --gCaL <w>

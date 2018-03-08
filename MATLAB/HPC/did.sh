@@ -1,0 +1,1 @@
+sbatch surfaceVsInterpolator_slurm.sh
