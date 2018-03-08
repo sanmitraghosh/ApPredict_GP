@@ -1,3 +1,4 @@
 TestApdFromParameterSet.hpp
 TestGenerateAPDTestSet.hpp
 TestLookupTableArchive.hpp
+TestInterpolate.hpp
