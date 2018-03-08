@@ -25,8 +25,7 @@ public:
         double apd;
         unsigned error_code;
         ApdFromParameterSet(scalings, apd, error_code);
-
-        TS_ASSERT_DELTA(apd, 268.9191, 1e-3);
+        sTS_ASSERT_DELTA(apd, 268.9191, 1e-3);
         TS_ASSERT_EQUALS(error_code, 0u);
     }
 
