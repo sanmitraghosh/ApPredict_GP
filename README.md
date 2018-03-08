@@ -65,4 +65,4 @@ Now open MATLAB and change the working directory to `<path/to/ApPredict_GP/MATLA
 
 ## Running
 
-To be filled in...
+To run the GP emulator and carry out some tests as in the paper follow the `readme` within the `MATLAB` directory. To test the LUT based interpolator see within `test` folder.
