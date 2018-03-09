@@ -25,20 +25,20 @@ for j=1:length(conc)
         R(i,j)=1 - (1/(1 + (ic50/conc(j))^Hill));
     end
     %%%%%%%%%% Predicted Class Labels %%%%%%%%%%%%%%%%%%
-        X_test=ones(length(samples),4);
-        Y_test=X_test;
-        X_test(:,2)=R(:,j)';
-
+        R_blocked=ones(length(samples),4);
+        y_blocked=R_blocked;
+        R_blocked(:,2)=R(:,j)';
+        
         gpoptions.classHyperParams.UQ=1;
-        [Yp, RepG] = build_multi_domains( X_class, Y_class, X_test, Y_test, gpoptions.classHyperParams );
+        [y_blocked_class, R_blocked_AP] = build_multi_domains(R_train_class, y_train_class, R_blocked, y_blocked, gpoptions.classHyperParams );
 
         gpoptions.surfHyperParams.minimize=0;
-        [APD_GP{j},UnCert, PredVar{j}]= pred_scatter_sparse( X_surf, Y_surf, RepG, gpoptions.surfHyperParams );
+        [APD_GP{j},UnCert, PredVar{j}]= pred_scatter_sparse(R_train_surf, y_train_surf, R_blocked_AP, gpoptions.surfHyperParams );
 
-        APDUQ=EvaluateAPD(X_test,gpoptions.pacing); 
-        [ ~, label ] = labelFinder( X_test, APDUQ );
+        APDUQ=EvaluateAPD(R_blocked,gpoptions.pacing); 
+        [ ~, label ] = labelFinder( R_blocked, APDUQ );
         Cord=find(label(:,2)==1);
-        X_true= X_test(Cord,:);
+        R_true= R_blocked(Cord,:);
         APD_Chaste{j}= APDUQ(Cord);
         
 
@@ -74,21 +74,21 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 k=3;
 
-X_slice=ones(1000,4);
-Y_slice=X_slice;
-X_slice(:,2)=linspace(0,1,1000);
+R_slice=ones(1000,4);
+y_slice=R_slice;
+R_slice(:,2)=linspace(0,1,1000);
 
-
+% y_star_class, R_test_AP, y_test_AP
 gpoptions.classHyperParams.UQ=1;
-[Yp, RepG] = build_multi_domains_silly( X_class, Y_class, X_slice, Y_slice, gpoptions.classHyperParams );
+[y_slice_class, R_slice_AP] = build_multi_domains_silly(R_train_class, y_train_class, R_slice, y_slice, gpoptions.classHyperParams );
 
 gpoptions.surfHyperParams.minimize=0;
-[APD_GP{k},UnCert, PredVar{k}]= pred_scatter_sparse( X_surf, Y_surf, RepG, gpoptions.surfHyperParams );
+[APD_GP{k},UnCert, PredVar{k}]= pred_scatter_sparse(R_train_surf, y_train_surf, R_slice_AP, gpoptions.surfHyperParams );
 
-APDslice=EvaluateAPD(X_slice,gpoptions.pacing); 
-[ ~, label ] = labelFinder( X_slice, APDslice );
+APDslice=EvaluateAPD(R_slice,gpoptions.pacing); 
+[ ~, label ] = labelFinder( R_slice, APDslice );
 Cord=find(label(:,2)==1);
-X_true= X_slice(Cord,:);
+R_true= R_slice(Cord,:);
 APD_Chaste{k}= APDslice(Cord);
 
 
@@ -101,12 +101,12 @@ figure1 = figure('InvertHardcopy','off','Color',[1 1 1]);
 axes1 = axes('Parent',figure1);
 hold(axes1,'on');
 
-h(1)=fill([RepG(:,2); flipdim(RepG(:,2),1)], f, [7 7 7]/8,'Parent',axes1,'DisplayName','Variance of Surface GP');
-h(2)=line(X_true(:,2),APD_Chaste{k},'Parent',axes1,'DisplayName','True surface (simulator)',...
+h(1)=fill([R_slice_AP(:,2); flipdim(R_slice_AP(:,2),1)], f, [7 7 7]/8,'Parent',axes1,'DisplayName','Variance of Surface GP');
+h(2)=line(R_true(:,2),APD_Chaste{k},'Parent',axes1,'DisplayName','True surface (simulator)',...
     'LineWidth',3,...
     'Color',[0 0 1]);
 
-h(3)=line(RepG(:,2),APD_GP{k},'Parent',axes1,'DisplayName','GP surface','LineWidth',3,...
+h(3)=line(R_slice_AP(:,2),APD_GP{k},'Parent',axes1,'DisplayName','GP surface','LineWidth',3,...
     'Color',[1 0 0]);
 
 line([0.05005 0.05005],[0 1000],'Color','k','Parent',axes1,'LineWidth',2);

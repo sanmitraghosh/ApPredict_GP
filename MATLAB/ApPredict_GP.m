@@ -1,23 +1,18 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % This script runs the iterative active learning for
-    % accumulating training points for the O'hara emulator using
+    % This script runs the two-step emulator for the O'hara model with 
+    % APD90 as the response variable using
     % Gaussian Processes.
-    % You can control the following variables to get different
-    % behaviour::
-    % 1) 'n1'--No. of initial random sampled data
-    % 1) 'ns'--Active swarm/particle size. For surface fix this to 1
-    % 1) 'Rounds**'--No. active learning rounds
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% scp coml0640@arcus-b.arc.ox.ac.uk:/data/coml-cardiac/coml0640/Backup/ApPredict_GPmat/Fig1_bck/Fig1lCurve.mat /home/sanosh/work_oxford/ApPredict_GPmat/results/
-% scp ApPredict_GP_fitc4Dinit.mat  coml0640@arcus-b.arc.ox.ac.uk:/data/coml-cardiac/coml0640/Backup/ApPredict_GPmat/
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Set up
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 close all
 clear all
 startup
-TestData=load('Alearning_4D_100k_Test.mat');% Change this with 'Alearning_4D_100k_Test.mat' for 4D
+TestData=load('Alearning_4D_100k_Test.mat');
 n1=50; %% Initial random data size
 ns=10; %% Active learning swarm size
 n2=100; %% Number of surface active learning rounds
@@ -28,7 +23,12 @@ STOPSURF=n1 + n2*ns/ns;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Pass al GP related information using the gpoptions structure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-gpoptions.twoStep=1;
+gpoptions.twoStep=1; 
+gpoptions.paperData=1;  %%% Change this to `0` if you want fresh init data
+gpoptions.cornerCases=1;
+%%%%%%%%%%%%%%%%% We suggest the user not changing the following parameters
+%%%%% unless they understand the method well enough
+
 gpoptions.n1=n1;
 gpoptions.pacing=100;
 gpoptions.NumInducingClass=300; % Inducing points for classifier
@@ -37,11 +37,9 @@ gpoptions.NumInducingSurf=1000; % Inducing points for surface
 gpoptions.sparseMarginSurf=20000; % No of training points upto which we use exact surface inference
 gpoptions.classHyperParams.minimize=0;
 gpoptions.surfHyperParams.minimize=0;
-gpoptions.covarianceKernels=@covRQiso;%{'covMaterniso',5};
-gpoptions.covarianceKernelsParams=[0.1;0.1;1];%[0.1;1.20];
+gpoptions.covarianceKernels=@covRQiso;
+gpoptions.covarianceKernelsParams=[0.1;0.1;1];
 gpoptions.likelihoodParams=0.015;
-gpoptions.paperData=1;
-gpoptions.cornerCases=1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   Sample Initial Random Training Data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -190,12 +188,14 @@ y_test_class=y_test_class+1;y_star_class=y_star_class+1;
     end
 ClassifierError=MisClassP; 
 PercClassifierError=100*(ClassifierError/length(R_test));
+Eboundary = PercClassifierError;
 TclassPred=toc;
 %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%% Surface errors %%%%%%%%%%%%%%%%%%%
 tic;
 gpoptions.surfHyperParams.minimize=0;
-[y_star_AP,Entropy]= surfaceGP(R_surf, Y_surf, R_test_AP, gpoptions.surfHyperParams);
+[y_star_AP,Entropy]= surfaceGP( R_train_surf, y_train_surf, R_test_AP, gpoptions.surfHyperParams);
 SurfaceError=mean(abs(y_test_AP'-y_star_AP));
+Esurface = SurfaceError;
 TsurfPred=toc;
 %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%% Plot the Final results/surface %%%%%%%%%
 plot3(R_test_AP(:,1),R_test_AP(:,2),y_test_AP,'*','MarkerSize',1);

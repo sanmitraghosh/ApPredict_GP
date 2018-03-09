@@ -1,4 +1,5 @@
-function [ Labels ] = justClassifier(x, y, xp, HyperParams )
+function [ Labels ] = justClassifier(x, y, xp, HyperParams)
+%%%%%% Helper function that does the OVR %%%%
 
 [ x_train,y_train ] = labelFinder( x, y);
 HyperParams.hyp=HyperParams.hyp1;
@@ -13,17 +14,17 @@ j=1;
 k=1;
 l=1;
 for i=1:length(xp)
- [a,b]=max([exp(lpNR(i)),exp(lpD(i)),exp(lpND(i))]);% % 
- [c,d]=min([s1(i),s2(i),s3(i)]);
+     [a,b]=max([exp(lpNR(i)),exp(lpD(i)),exp(lpND(i))]);% % 
+     [c,d]=min([s1(i),s2(i),s3(i)]);
 
-    if b==1 %&& d==1%%&& APDtrue(i)==1500
+    if b==1 
         Labels(i)=0;
         j=j+1;
-    elseif b==2 && exp(lpD(i))>0.7 %APDtrue(i)~=10 && APDtrue(i)~=1500 
-         Labels(i)=1;
+    elseif b==2 && exp(lpD(i))
+        Labels(i)=1;
         k=k+1;
-    elseif b==3 %&& d==3%%&& APDtrue(i)==10
-         Labels(i)=0;
+    elseif b==3 
+        Labels(i)=0;
         l=l+1;
     end
 

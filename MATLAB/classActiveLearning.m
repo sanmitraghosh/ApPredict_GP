@@ -1,12 +1,12 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % This script gathers actively learnt training data for
-    % classifier/boundary prediction. This corresponds to the Fig4 in the paper.
+    % classifier/boundary prediction. 
     % You can control the following variables to get different
     % behaviour::
     % 1) 'n1'--No. of initial random sampled data
-    % 1) 'ns'--Active swarm/particle size. For surface fix this to 1
-    % 1) 'r'--No. active learning r
+    % 1) 'ns'--Active swarm/particle size. 
+    % 1) 'r'--No. active learning rounds
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -31,10 +31,11 @@ gpoptions.pacing=100;
 gpoptions.NumInducingClass=300;
 gpoptions.sparseMargin=5000;
 gpoptions.classHyperParams.minimize=0;
-gpoptions.paperData=1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+gpoptions.paperData=1;  %%% Change this to `0` if you want fresh init data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Load up a pool of random training data
-    % from which we will draw randomely to compare with active learning
+    % from which we will draw randomly to compare with active learning
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 R_random=gk;
@@ -48,9 +49,7 @@ R_InitClassTrain=gk(cu,:);
 y_InitClassTrain=APDtrue(cu);
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Load Initial Random Training Data from results
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%% This is to replicate paper results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if gpoptions.paperData ==1
     if size(R_random,2)==2
         initData=load('./data/2D/classActive2DpaperInit.mat');
@@ -71,16 +70,15 @@ outparam= learnGPhyp( R_InitClassTrain, y_InitClassTrain, gpoptions );
 gpoptions.classHyperParams=outparam;
 thyp=toc;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Do a few r of classifier active learning
+%   Do a few rounds of classifier active learning
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 gpoptions.Batch=0;
-gpoptions.method='pso'; % Flag to trigger the swarming types or grid ('grid' 'pso' 'ga')
+gpoptions.method='pso'; % Flag to trigger the swarming types or grid ('grid' 'pso')
 gpoptions.Model='APD';
 gpoptions.STOP=STOPCLASS;
 gpoptions.ns=ns;
 
 [ R_ALtrain, y_ALtrain ] = sequentialDesign( R_InitClassTrain, y_InitClassTrain, gpoptions );
-% tintelli=dlmread('Telapsed.txt');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   Remove the initial points from the pool of random training data

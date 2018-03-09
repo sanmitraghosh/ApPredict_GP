@@ -1,7 +1,8 @@
-% close all
-% clear all
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % This function calls the C++ APD app
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [APD]= EvaluateAPD(gk,Init_Pace)
-% tic
+% We have hard-coded number of pacing to 100 in C++
 parfor i=1:length(gk)
 gNa = gk(i,1);
 gKr = gk(i,2);
@@ -25,4 +26,3 @@ end
 % toc
 APD=apd';
 
-% plot3(gk(1:10000,1),gk(1:10000,2),APDtrue(1:10000),'*','MarkerSize',5)

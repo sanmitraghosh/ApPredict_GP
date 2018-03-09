@@ -97,12 +97,11 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for j=1:length(CScale)
         if j==1
-        R_active=R_init;
-        y_active=y_init;
+            R_active=R_init;
+            y_active=y_init;
         else
-        R_active=ActiveData.R_ALtrain(1:CScale(j),:);
-        y_active=ActiveData.y_ALtrain(1:CScale(j)); 
-        
+            R_active=ActiveData.R_ALtrain(1:CScale(j),:);
+            y_active=ActiveData.y_ALtrain(1:CScale(j)); 
         end
         gpoptions.classHyperParams=ActiveData.outparam;
         gpoptions.classHyperParams.minimize=0;

@@ -17,7 +17,7 @@
 close all
 clear all
 startup
-load('Alearning_4D_100k_Train.mat');%Change this with 'Alearning_4D_100k_Train.mat' for 4D
+load('Alearning_2D_10k_Train.mat');%Change this with 'Alearning_4D_100k_Train.mat' for 4D
 
 GridData=load('Alearning_2D_10k_Grid.mat');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -37,10 +37,12 @@ gpoptions.NumInducingSurf=1000;
 gpoptions.sparseMarginSurf=10000;
 gpoptions.classHyperParams.minimize=0;
 gpoptions.surfHyperParams.minimize=0;
-gpoptions.covarianceKernels=@covNNone;%@covRQiso;%{'covMaterniso',5};
-gpoptions.covarianceKernelsParams=[0.1;1];%[0.1;0.21;1];%[0.1;1.20];
-gpoptions.likelihoodParams=0.015;
-gpoptions.paperData=1;
+gpoptions.covarianceKernels=@covRQiso;
+gpoptions.covarianceKernelsParams=[0.1;0.21;1]; % Ifound these to work
+gpoptions.likelihoodParams=0.015; % as well as this
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+gpoptions.paperData=1;  %%% Change this to `0` if you want fresh init data
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Load up a pool of random training data
     % from which we will draw randomely to compare with active learning
@@ -68,6 +70,7 @@ y_InitClassTrain = y_random(cu,:); %%% Start with random n1 points
 R_random(cu,:)=[]; %%% Remove these chosen points from the pool
 y_random(cu)=[];
 
+%%%%%%%%%%%%%%%%%%%%% This is to replicate paper results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if gpoptions.paperData ==1
     if size(R_random,2)==2
         initData=load('./data/2D/surfActive2DpaperInit.mat');
@@ -99,7 +102,7 @@ outparam= learnGPhyp( R_InitSurfTrain, y_InitSurfTrain, gpoptions );
 gpoptions.surfHyperParams=outparam;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Do a few n2 of surface active learning
+%   Do n2 rounds of surface active learning
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 gpoptions.Batch=0;
 gpoptions.method='grid'; % Flag to trigger the swarming types or grid ('grid' 'pso' 'ga')
@@ -113,7 +116,6 @@ gpoptions.pltDisabled=0; % Turning it on starts plotting contour plots (slow)
 gpoptions.ALtime=ones(100,1);
 
 [ R_ALtrain, y_ALtrain ] = sequentialDesign( R_InitClassTrain, y_InitClassTrain, gpoptions );
-% Telapsed=dlmread('Telapsed.txt');
 close all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   Keep only the AP related points for the active training data

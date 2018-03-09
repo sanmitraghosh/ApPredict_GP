@@ -32,6 +32,9 @@ exit;
 % % exit;
 % 
 % plot3(gk(:,1),gk(:,2),APDtrue,'b*','MarkerSize',1);
+% scp coml0640@arcus-b.arc.ox.ac.uk:/data/coml-cardiac/coml0640/Backup/ApPredict_GPmat/Fig1_bck/Fig1lCurve.mat /home/sanosh/work_oxford/ApPredict_GPmat/results/
+% scp ApPredict_GP_fitc4Dinit.mat  coml0640@arcus-b.arc.ox.ac.uk:/data/coml-cardiac/coml0640/Backup/ApPredict_GPmat/
+
 
 [ ~, label ] = labelFinder( gk, APDtrue );
 Cord=find(label(:,3)==1);

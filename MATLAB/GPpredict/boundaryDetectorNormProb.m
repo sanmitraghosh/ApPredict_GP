@@ -1,6 +1,6 @@
 function [y_star_class, R_star_AP, y_star_AP] = boundaryDetectorNormProb(R, y, R_star, HyperParams, y_true)
- 
-disp('Using Correct multidomain')
+%%%%%% This function is for plotting Normalised probabilities and certainty %%%%
+
 [ R_train,y_train ] = labelFinder( R, y);
 HyperParams.hyp=HyperParams.hyp1;
 [s1, lpNR ] = classifierGP( R_train, y_train(:,1), R_star, HyperParams);

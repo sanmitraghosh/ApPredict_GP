@@ -1,4 +1,7 @@
-function [ x, y ] = labelFinder( Gk,APDkn )
+function [x, y] = labelFinder(Gk, APDkn)
+%%%%%% A helper function that finds the labels on the basis of simulator error codes %%%%
+
+
 x=Gk;
 for i=1:length(x)
     if APDkn(i)==1000

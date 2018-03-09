@@ -11,7 +11,7 @@ close all
 clear all
 startup
 ActiveData=load('surfActiveCurrent.mat');
-TestData=load('Alearning_4D_100k_Test.mat'); % Change this with 'Alearning_4D_100k_Test.mat' for 4D
+TestData=load('Alearning_2D_10k_Grid.mat'); % Change this with 'Alearning_4D_100k_Test.mat' for 4D
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Pass al GP related information using the gpoptions structure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -19,10 +19,8 @@ gpoptions.NumInducingSurf=1000;
 gpoptions.sparseMarginSurf=10000;
 gpoptions.classHyperParams.minimize=0;
 gpoptions.surfHyperParams.minimize=0;
-% gpoptions.covarianceKernels={'covMaterniso',5};
-% gpoptions.covarianceKernelsParams=[0.1;1.20];
-gpoptions.covarianceKernels=@covRQiso;%{'covMaterniso',5};
-gpoptions.covarianceKernelsParams=[0.1;0.21;1];%[0.1;1.20];
+gpoptions.covarianceKernels=@covRQiso;
+gpoptions.covarianceKernelsParams=[0.1;0.21;1];
 
 gpoptions.likelihoodParams=0.015;
 
