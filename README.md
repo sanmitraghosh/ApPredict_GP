@@ -2,7 +2,7 @@
 
 A bolt-on extension to www.github.com/Chaste/ApPredict to use Gaussian Process emulators to allow us to do uncertainty quantification more quickly and easily.
 
-## Schematic of inputs and outputs
+## Schematic of the emulator of APD90
 
 ![schematic of APD90 emulator](https://github.com/sanmitraghosh/ApPredict_GP/blob/master/SimulatorEmulator.png)
 
