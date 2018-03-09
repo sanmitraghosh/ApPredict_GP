@@ -4,7 +4,7 @@ A bolt-on extension to www.github.com/Chaste/ApPredict to use Gaussian Process e
 
 ## Schematic of inputs and outputs
 
-![schematic of APD90 emulator](https://github.com/sanmitraghosh/ApPredict_GP/blob/master/SimulatorEmulator.pdf)
+![schematic of APD90 emulator](https://github.com/sanmitraghosh/ApPredict_GP/blob/master/SimulatorEmulator.png)
 
 ## Dependencies
 
