@@ -1,7 +1,7 @@
-function plotted = plotRandomContours(swarm, Batch, contMapActive, contMapDumb, mode, ActiveData)
+function plotted = plotRandomContours(swarm, Batch, contMapActive, contMapDumb, mode)
 %%%%%% This function is for plotting comparisons of uncertainty %%%%
 
-figurepath=ActiveData.path;
+figurepath=pwd;
 Batch=Batch-1;
 [t1,t2] = ndgrid(linspace(0,1,100)); 
 t = [t1(:),t2(:)]; 
@@ -40,13 +40,13 @@ if strcmp(mode,'classifier')
 else
 
         labgrid=dlmread('GridLabels.txt');
-        cordOutside=find(labgrid(:,2)==-1);
+        cordOutside=labgrid(:,2);%find(labgrid(:,2)==-1);
         subplot(1,2,1)                              
         ax=gca;
         hold on;
          contourf(t1, t2, reshape(contMapActive, size(t1)), 10);
         colorbar
-        cordOutside = ActiveData.labelGrid(:,2);
+%         cordOutside = ActiveData.labelGrid(:,2);
         contourf(t1, t2, reshape(cordOutside, size(t1)), 'LineWidth',3,'LineColor','w','LevelList',[-1 -0.5 0 0.5],'Fill','Off');
 
         scatter(swarm(:,1),swarm(:,2),100,...,

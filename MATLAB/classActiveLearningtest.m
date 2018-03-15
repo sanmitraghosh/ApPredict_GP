@@ -13,13 +13,19 @@ clear all
 startup
 
 ActiveData=load('classActiveCurrent.mat');
-TestData=load('Alearning_2D_10k_Grid.mat');%Change this with 'Alearning_4D_100k_Test.mat' for 4D
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Pass al GP related information using the gpoptions structure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 gpoptions.NumInducingClass=300;
 gpoptions.sparseMargin=5000;
 gpoptions.classHyperParams.minimize=0;
+Dimension=ActiveData.gpoptions.Dimension;
+if strcmp(Dimension,'2D')
+    TestData=load('Alearning_2D_10k_Grid.mat');
+elseif strcmp(Dimension,'4D')
+    TestData=load('Alearning_4D_100k_Test.mat');
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Load up the initial, random training, and test dataset
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -66,7 +72,7 @@ for k=1:10
             contMapD=certainty( R_rand, y_rand, grid2D, ActiveData.outparam );
             contMapA=certainty( R_active, y_active, grid2D, ActiveData.outparam );
             swarm=[R_active R_rand];
-            plotRandomContours( swarm,j,contMapA, contMapD, 'classifier' )
+            plotRandomContours(swarm,j,contMapA, contMapD, 'classifier' )
        end 
             gpoptions.classHyperParams=ActiveData.outparam;
             gpoptions.classHyperParams.minimize=0;

@@ -46,7 +46,8 @@ switch state
             axis tight manual;
             Batch=num2str(dlmread('psoBatch.txt'));
             title(strcat('Round r=',Batch,' PSO Iteration--',IterNum));
-            fname = '/home/sanosh/work_oxford/ApPredict_GPmat/Figure/videos/psoActive2D';
+            figurepath=pwd;%dlmread('figurepath.txt');
+            fname = strcat(figurepath,'/Figure/videos/psoActive2D');
             zlabel('Certainty');
             saveas(gcf,fullfile(fname,strcat(Batch,'Iter','--',IterNum)),'fig')
 

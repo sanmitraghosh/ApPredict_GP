@@ -10,7 +10,7 @@ HyperParams.hyp=HyperParams.hyp3;
 [s3, lpND ] = classifierGP( R_train, y_train(:,3), R_star, HyperParams);
 
 lp1=exp(lpNR);lp2=exp(lpD);lp3=exp(lpND);
-for i=1:length(xp)
+for i=1:length(R_star)
       Tot=sum(lp1(i)+lp2(i)+lp3(i));
       lp1(i)=lp1(i)/Tot;
       lp2(i)=lp2(i)/Tot;
@@ -19,7 +19,7 @@ for i=1:length(xp)
 end
 
     
-for i=1:length(xp)
+for i=1:length(R_star)
  [a,b]=max([lp1(i),lp2(i),lp3(i)]);
     if b==1 
         Pdist(i)=lp1(i)-max([lp2(i),lp3(i)]); 

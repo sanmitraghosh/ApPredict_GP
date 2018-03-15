@@ -16,16 +16,17 @@
 close all
 clear all
 startup
-load('Alearning_2D_10k_Train.mat');%Change this with 'Alearning_4D_100k_Train.mat' for 4D
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Pass al GP related information using the gpoptions structure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-n1=100;
-ns=25;
-r=20;
+Dimension='4D';
+n1=500;
+ns=50;
+r=4;
 STOPCLASS=n1 + r*ns;
 gpoptions.ns=ns;
 gpoptions.n1=n1;
+gpoptions.Dimension=Dimension;
 gpoptions.twoStep=0;
 gpoptions.pacing=100;
 gpoptions.NumInducingClass=300;
@@ -33,6 +34,12 @@ gpoptions.sparseMargin=5000;
 gpoptions.classHyperParams.minimize=0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 gpoptions.paperData=1;  %%% Change this to `0` if you want fresh init data
+gpoptions.figurepath=pwd;
+if strcmp(Dimension,'2D')
+    load('Alearning_2D_10k_Train.mat');
+elseif strcmp(Dimension,'4D')
+    load('Alearning_4D_100k_Train.mat');
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Load up a pool of random training data
     % from which we will draw randomly to compare with active learning

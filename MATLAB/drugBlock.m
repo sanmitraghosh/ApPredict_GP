@@ -30,10 +30,10 @@ for j=1:length(conc)
         R_blocked(:,2)=R(:,j)';
         
         gpoptions.classHyperParams.UQ=1;
-        [y_blocked_class, R_blocked_AP] = build_multi_domains(R_train_class, y_train_class, R_blocked, y_blocked, gpoptions.classHyperParams );
+        [y_blocked_class, R_blocked_AP] = boundaryDetector(R_train_class, y_train_class, R_blocked, gpoptions.classHyperParams, y_blocked);
 
         gpoptions.surfHyperParams.minimize=0;
-        [APD_GP{j},UnCert, PredVar{j}]= pred_scatter_sparse(R_train_surf, y_train_surf, R_blocked_AP, gpoptions.surfHyperParams );
+        [APD_GP{j},UnCert, PredVar{j}]= surfaceGP(R_train_surf, y_train_surf, R_blocked_AP, gpoptions.surfHyperParams );
 
         APDUQ=EvaluateAPD(R_blocked,gpoptions.pacing); 
         [ ~, label ] = labelFinder( R_blocked, APDUQ );
@@ -53,7 +53,7 @@ for k=1:length(conc)
     for i=1:length(APD_GP{k})
         support=linspace(0,1000,1000);
         for j=1:length(support)
-            pdf(j,i)=normpdf(support(j),APD_GP{k}(i),sqrt(PredVar{k}(i))-exp(2*gpoptions.surfHyperParams.hyp.lik));
+            pdf(j,i)=normpdf(support(j),APD_GP{k}(i),sqrt(PredVar{k}(i)));%-exp(2*gpoptions.surfHyperParams.hyp.lik)
         end
     end
     PDF=sum(pdf,2);
@@ -78,12 +78,11 @@ R_slice=ones(1000,4);
 y_slice=R_slice;
 R_slice(:,2)=linspace(0,1,1000);
 
-% y_star_class, R_test_AP, y_test_AP
 gpoptions.classHyperParams.UQ=1;
-[y_slice_class, R_slice_AP] = build_multi_domains_silly(R_train_class, y_train_class, R_slice, y_slice, gpoptions.classHyperParams );
+[y_slice_class, R_slice_AP] = boundaryDetectorNormProb(R_train_class, y_train_class, R_slice, gpoptions.classHyperParams, y_slice );
 
 gpoptions.surfHyperParams.minimize=0;
-[APD_GP{k},UnCert, PredVar{k}]= pred_scatter_sparse(R_train_surf, y_train_surf, R_slice_AP, gpoptions.surfHyperParams );
+[APD_GP{k},UnCert, PredVar{k}]= surfaceGP(R_train_surf, y_train_surf, R_slice_AP, gpoptions.surfHyperParams );
 
 APDslice=EvaluateAPD(R_slice,gpoptions.pacing); 
 [ ~, label ] = labelFinder( R_slice, APDslice );
@@ -101,6 +100,7 @@ figure1 = figure('InvertHardcopy','off','Color',[1 1 1]);
 axes1 = axes('Parent',figure1);
 hold(axes1,'on');
 
+f = [APD_GP{k}+2*sqrt(PredVar{k}); flipdim(APD_GP{k}-2*sqrt(PredVar{k}),1)]; 
 h(1)=fill([R_slice_AP(:,2); flipdim(R_slice_AP(:,2),1)], f, [7 7 7]/8,'Parent',axes1,'DisplayName','Variance of Surface GP');
 h(2)=line(R_true(:,2),APD_Chaste{k},'Parent',axes1,'DisplayName','True surface (simulator)',...
     'LineWidth',3,...
@@ -109,8 +109,9 @@ h(2)=line(R_true(:,2),APD_Chaste{k},'Parent',axes1,'DisplayName','True surface (
 h(3)=line(R_slice_AP(:,2),APD_GP{k},'Parent',axes1,'DisplayName','GP surface','LineWidth',3,...
     'Color',[1 0 0]);
 
-line([0.05005 0.05005],[0 1000],'Color','k','Parent',axes1,'LineWidth',2);
+line([min(R_slice_AP(:,2)) min(R_slice_AP(:,2))],[0 1000],'Color','k','Parent',axes1,'LineWidth',2);
 line([0.05405 0.05405],[0 1000],'Color','k','Parent',axes1,'LineWidth',2);
+
 xlabel('R_{Kr}');
 ylabel('APD_{90} (ms)');
 box(axes1,'on');
@@ -120,16 +121,16 @@ axes2 = axes('Parent',figure1,...
     'ColorOrder',[0.85 0.325 0.098;0.929 0.694 0.125;0.494 0.184 0.556;0.466 0.674 0.188;0.301 0.745 0.933;0.635 0.078 0.184;0 0.447 0.741],...
     'Position',[0.13 0.11 0.775 0.815]);
 
-h(4)=line(X_slice(:,2),probaDep,'Parent',axes2,'DisplayName','p(Surface)','LineWidth',3,...
+h(4)=line(R_slice(:,2),probaDep,'Parent',axes2,'DisplayName','p(Surface)','LineWidth',3,...
     'LineStyle','-.',...
     'Color',[0.929 0.694 0.125]);
 
-h(5)=line(X_slice(:,2),probaNRep,'Parent',axes2,'DisplayName','p(No-Repolarisation)',...
+h(5)=line(R_slice(:,2),probaNRep,'Parent',axes2,'DisplayName','p(No-Repolarisation)',...
     'LineWidth',3,...
     'LineStyle','-.',...
     'Color',[0.494 0.184 0.556]);
 
-h(6)=line(X_slice(:,2),probaNDep,'Parent',axes2,'DisplayName','p(No-Depolarisation)',...
+h(6)=line(R_slice(:,2),probaNDep,'Parent',axes2,'DisplayName','p(No-Depolarisation)',...
     'LineWidth',3,...
     'LineStyle','-.',...
     'Color',[0.466 0.674 0.188]);

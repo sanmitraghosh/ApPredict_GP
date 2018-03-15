@@ -11,7 +11,6 @@ close all
 clear all
 startup
 ActiveData=load('surfActiveCurrent.mat');
-TestData=load('Alearning_2D_10k_Grid.mat'); % Change this with 'Alearning_4D_100k_Test.mat' for 4D
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Pass al GP related information using the gpoptions structure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -23,7 +22,12 @@ gpoptions.covarianceKernels=@covRQiso;
 gpoptions.covarianceKernelsParams=[0.1;0.21;1];
 
 gpoptions.likelihoodParams=0.015;
-
+Dimension=ActiveData.gpoptions.Dimension;
+if strcmp(Dimension,'2D')
+    TestData=load('Alearning_2D_10k_Grid.mat');
+elseif strcmp(Dimension,'4D')
+    TestData=load('Alearning_4D_100k_Test.mat');
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Load up the initial, random training, and test dataset
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -72,7 +76,7 @@ for k=1:10
                 contMapR=surfaceCertainty( R_rand, y_rand, grid2D, ActiveData.outparam );
                 contMapA=surfaceCertainty( R_active, y_active, grid2D, ActiveData.outparam );
                 swarm=[R_active R_rand];
-                plotRandomContours( swarm, j, contMapA, contMapR, 'surface', ActiveData )
+                plotRandomContours(swarm, j, contMapA, contMapR, 'surface')
             end
        end 
         gpoptions.surfHyperParams=ActiveData.outparam;

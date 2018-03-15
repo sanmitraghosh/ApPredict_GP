@@ -6,7 +6,8 @@ Batch=gpoptions.Batch;
 LM=gpoptions.LearningMode;
 Init_Pace=gpoptions.pacing;
 ns=gpoptions.ns;
-figurepath=gpoptions.figurepath;
+figurepath=pwd;
+dlmwrite('figurepath.txt',figurepath);
 %%%%%%%%%%%% Setup the objective function that is the uncertainty metric %%%%%%%
     if strcmp(LM,'classifier')
         HyperParams=gpoptions.classHyperParams;

@@ -13,10 +13,10 @@ close all
 clear all
 startup
 TestData=load('Alearning_4D_100k_Test.mat');
-n1=50; %% Initial random data size
-ns=10; %% Active learning swarm size
-n2=100; %% Number of surface active learning rounds
-r=5; %% Number of classifier active learning rounds
+n1=500; %% Initial random data size
+ns=50; %% Active learning swarm size
+n2=3000; %% Number of surface active learning rounds
+r=30; %% Number of classifier active learning rounds
 Telapsed=zeros(1000,1);
 STOPCLASS=n1 + r*ns;
 STOPSURF=n1 + n2*ns/ns;
@@ -26,6 +26,7 @@ STOPSURF=n1 + n2*ns/ns;
 gpoptions.twoStep=1; 
 gpoptions.paperData=1;  %%% Change this to `0` if you want fresh init data
 gpoptions.cornerCases=1;
+gpoptions.figurepath=pwd;
 %%%%%%%%%%%%%%%%% We suggest the user not changing the following parameters
 %%%%% unless they understand the method well enough
 
@@ -148,11 +149,11 @@ y_train_surf=[y_InitSurfTrain;y_ALSurfTrain];
 %   Update/Re-learn Hyperparameters after Active Surface Learning
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 gpoptions.LearningMode='surface';
-if size(R_surf,2)==4
+if size(R_train_surf,2)==4
 % gpoptions.covarianceKernelsParams=[1;1;0.1];% for 4D the initial values are set like this;
     gpoptions.covarianceKernelsParams=[1;1;0.25];% for 4D the initial values are set like this;
 end
-outparam= learnGPhyp( R_train_surf, y_train_surf, gpoptions );
+outparam= learnGPhyp(R_train_surf, y_train_surf, gpoptions);
 gpoptions.surfHyperParams=outparam;
 
 TsurfTrain=toc;
