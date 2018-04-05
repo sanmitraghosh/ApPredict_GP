@@ -19,10 +19,10 @@ startup
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Pass al GP related information using the gpoptions structure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Dimension='4D';
-n1=500;
-ns=50;
-r=4;
+Dimension='2D';
+n1=100;
+ns=25;
+r=20;
 STOPCLASS=n1 + r*ns;
 gpoptions.ns=ns;
 gpoptions.n1=n1;
