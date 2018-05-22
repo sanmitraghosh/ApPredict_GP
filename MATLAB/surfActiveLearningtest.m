@@ -122,7 +122,7 @@ xlim([CScale(1) CScale(end)])
 xlabel('Training Size')
 ylabel('Mean Absolute Error in APD90 (ms)')
 set(axes1,'FontSize',20);
-legend('Confidence interval Random Error','Random Error (mean out of 10 runs)', 'Active Error')
+legend('Standard deviation of random error','Random Error (mean out of 10 runs)', 'Active Error')
 title('Surface Active Learning')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Plot predicted Surface

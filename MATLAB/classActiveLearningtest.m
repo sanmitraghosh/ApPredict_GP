@@ -148,7 +148,7 @@ xlim([CScale(1) CScale(end)])
 xlabel('Training Size')
 ylabel('Misclassification Rate (%)')
 set(axes1,'FontSize',20);
-legend('Confidence interval Random Error','Random Error (mean out of 10 runs)', 'Active Error')
+legend('Standard deviation of random error','Random Error (mean out of 10 runs)', 'Active Error')
 title('Classifier Active Learning')
 
 command='rm -rf *.txt';

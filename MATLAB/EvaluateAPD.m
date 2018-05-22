@@ -3,7 +3,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [APD]= EvaluateAPD(gk,Init_Pace)
 % We have hard-coded number of pacing to 100 in C++
-parfor i=1:length(gk)
+for i=1:length(gk)
 gNa = gk(i,1);
 gKr = gk(i,2);
 gKs = gk(i,3);
