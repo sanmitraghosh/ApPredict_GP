@@ -5,6 +5,7 @@
 #include <ColumnDataWriter.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/shared_ptr.hpp>
+#include <chrono>
 #include <cxxtest/TestSuite.h>
 
 #include "CheckpointArchiveTypes.hpp"
@@ -42,6 +43,9 @@ public:
         mpTestWriter = new ColumnDataWriter("InterpolationError", "InterpolationError");
         int time_var_id = mpTestWriter->DefineUnlimitedDimension("NumEvaluations", "dimensionless");
         int interperr_var_id = mpTestWriter->DefineVariable("LOneError", "milliseconds");
+        // timer 
+        int interptime_var_id = mpTestWriter->DefineVariable("InterplotionTime", "seconds");
+        
         unsigned conf_box_one = mpTestWriter->DefineVariable("APAP", "dimensionless");
         unsigned conf_box_two = mpTestWriter->DefineVariable("APNoDep", "dimensionless");
         unsigned conf_box_three = mpTestWriter->DefineVariable("APNoRep", "dimensionless");
@@ -97,9 +101,14 @@ public:
             std::cout << "Loading from archive " << num_evaluations[i] << " evaluations." << std::endl;
             input_arch >> p_generator_read_in;
 
-            // Interpolate ********* Gary pls Check********************
+            // Interpolate and time
+            auto start = std::chrono::high_resolution_clock::now();
             std::vector<std::vector<double> > interpolated_values = p_generator_read_in->Interpolate(parameter_values);
-
+            // Calculte time
+            auto finish = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = finish - start;
+            double InterpTime = elapsed.count();
+            
             // Put in a normal standard vector over the parameter sets
             std::vector<double> apd_values;
             for (unsigned j = 0; j < interpolated_values.size(); j++)
@@ -196,6 +205,7 @@ public:
             // Write all the results to file
             mpTestWriter->PutVariable(time_var_id, num_evaluations[i]);
             mpTestWriter->PutVariable(interperr_var_id, error);
+            mpTestWriter->PutVariable(interptime_var_id, InterpTime);
             mpTestWriter->PutVariable(conf_box_one, c1);
             mpTestWriter->PutVariable(conf_box_two, c2);
             mpTestWriter->PutVariable(conf_box_three, c3);
