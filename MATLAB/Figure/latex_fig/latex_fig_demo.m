@@ -15,14 +15,16 @@ text(-pi/4,sin(-pi/4),'\leftarrow sin(-\pi\div4)',...
 set(p,'Color','red','LineWidth',2)
 
 latex_fig(10, 2.5, 1.77)
-openfig('surfErrorInterpVsGp.fig')
+openfig('surfActive4D.fig')
 
 set(findall(gcf,'-property','FontSize'),'FontSize',11)
 font_size=11;
-f_width =4;f_height=2;
+f_width =2.5;f_height=2;
 font_rate=10/font_size;
 set(gcf,'Position',[100   200   round(f_width*font_rate*144)   round(f_height*font_rate*144)])
-
+set(legend1,...
+    'Position',[0.328982896120446 0.0367826714741751 0.374303675110236 0.0213358065801117],...
+    'Orientation','horizontal');
 
 
 a=get(gcf,'Position');
