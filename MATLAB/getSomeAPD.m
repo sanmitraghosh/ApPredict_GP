@@ -23,6 +23,13 @@ toc
 save('Alearning_4D_100k_Test.mat');
 exit;
 
+
+gk=[0.9 .1 0.5 .8; 0.9 .1 0.5 .8 ;...
+    0.9 .1 0.5 .8;0.9 .1 0.5 .8];
+APD = EvaluateAPD(gk,100);
+TestAPD = [734.3490;  734.3490;  734.3490;  734.3490];
+assert(all(APD==TestAPD),'Communication failed');
+
 % steps=linspace(0,100000,100000)';
 % throw_chaste=[gk APDtrue];
 % % % % dlmwrite('myParam.dat',throw_chaste,'Delimiter',' ','precision','%1.8e','coffset',2);

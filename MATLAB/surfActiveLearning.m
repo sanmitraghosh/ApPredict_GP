@@ -22,10 +22,10 @@ GridData=load('Alearning_2D_10k_Grid.mat');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Pass al GP related information using the gpoptions structure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Dimension='2D';
-n1=100;
+Dimension='4D';
+n1=500;
 ns=1;
-n2=500;
+n2=2500;
 STOPSURF=n1 + n2*ns;
 gpoptions.n2=n2;
 gpoptions.n1=n1;
