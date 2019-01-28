@@ -7,18 +7,18 @@ startup
 time=39.428151;
 BBData=load('resultBBfitc.mat');
 BBtimeTrue=BBData.ActiveData.tintelli(1:5)-time;
-BBErrorRate=BBData.ClassifierErrorActive(2:end);
+BBErrorRate=BBData.ClassifierErrorActive(1:end);
 BBErrorRate=BBErrorRate;
 
 BMData=load('resultBMfitc.mat');
 BMtimeTrue=BMData.ActiveData.tintelli(1:10)-time;
-BMErrorRate=BMData.ClassifierErrorActive(2:end);
+BMErrorRate=BMData.ClassifierErrorActive(1:end);
 BMErrorRate=BMErrorRate;
 
 
 BSData=load('resultBSfitc.mat');
 BStimeTrue=BSData.ActiveData.tintelli(1:50)-time;
-BSErrorRate=BSData.ClassifierErrorActive(2:end);
+BSErrorRate=BSData.ClassifierErrorActive(1:end);
 BSErrorRate=BSErrorRate;
 
 figure1 = figure;
