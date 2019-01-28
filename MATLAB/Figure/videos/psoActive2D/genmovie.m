@@ -1,9 +1,9 @@
 clear k;clear l; clear m;clear n;
 fps= 1;
-outfile = sprintf('%s','Swarm25');
-mov = VideoWriter(outfile,'Uncompressed AVI');%'fps',fps,'quality',100);
+outfile = sprintf('%s','Fig10b');
+mov = VideoWriter(outfile,'Motion JPEG AVI');%'fps',fps,'quality',100);
 mov.FrameRate=1;
-CompressionRatio = 30;
+CompressionRatio = 100;
 open(mov);
 % set(fig1,'NextPlot','replacechildren');
 fileIndex=[12,3,17,3,14,5,4,4];
